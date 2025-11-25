@@ -15,6 +15,16 @@ class Settings:
         )
     )
     secret_key: str = field(default_factory=lambda: os.getenv("SECRET_KEY", "dev-secret-key"))
+    allowed_origins: list[str] = field(
+        default_factory=lambda: [
+            origin.strip()
+            for origin in os.getenv(
+                "ALLOWED_ORIGINS",
+                "http://localhost:3000,http://web:80,http://localhost:5173,http://127.0.0.1:5173",
+            ).split(",")
+            if origin.strip()
+        ]
+    )
 
 
 def get_settings() -> Settings:

@@ -4,17 +4,39 @@ Chiller Intelligence – backend skeleton for a multi-tenant chiller analytics p
 
 ## Getting Started
 
-Build and start the stack:
+Build and start the stack (API + web UI):
 
 ```bash
 docker-compose up --build
 ```
+
+The React frontend is available at http://localhost:3000 and communicates with the API using
+the `VITE_API_BASE_URL` defined in `docker-compose.yml`.
 
 Run database migrations inside the API container:
 
 ```bash
 docker-compose exec api alembic upgrade head
 ```
+
+### Running the API locally
+
+```bash
+cd api
+uvicorn src.main:app --reload
+```
+
+### Running the frontend locally
+
+```bash
+cd web
+npm install
+VITE_API_BASE_URL=http://localhost:8000 npm run dev
+```
+
+The frontend handles registration/login plus CRUD flows for organization settings, buildings,
+chiller units, data sources, and alert rules. Configure all platform entities through the UI
+instead of CLI commands or configuration files.
 
 ## Health Check
 
