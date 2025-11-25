@@ -6,3 +6,6 @@ env/
 .idea/
 .vscode/
 alembic/versions/*.pyc
+web/node_modules/
+web/dist/
+web/.vite/

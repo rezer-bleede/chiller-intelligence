@@ -22,5 +22,14 @@ services:
     ports:
       - "8000:8000"
 
+  web:
+    build: ./web
+    depends_on:
+      - api
+    environment:
+      - VITE_API_BASE_URL=http://api:8000
+    ports:
+      - "3000:80"
+
 volumes:
   db_data:
