@@ -17,6 +17,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from src.db import Base
+import src.models  # noqa: F401  Ensures models are registered with metadata
 from src.config import settings
 
 config = context.config
