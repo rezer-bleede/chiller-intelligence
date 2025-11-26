@@ -7,13 +7,20 @@ from sqlalchemy.pool import StaticPool
 
 from .config import settings
 
-is_sqlite = settings.database_url.startswith("sqlite")
-connect_args = {"check_same_thread": False} if is_sqlite else {}
-engine_kwargs = {"future": True, "connect_args": connect_args}
-if is_sqlite:
-    engine_kwargs["poolclass"] = StaticPool
 
-engine = create_engine(settings.database_url, **engine_kwargs)
+def create_engine_from_settings(current_settings):
+    """Build a SQLAlchemy engine configured for the provided settings."""
+
+    is_sqlite = current_settings.database_url.startswith("sqlite")
+    connect_args = {"check_same_thread": False} if is_sqlite else {}
+    engine_kwargs = {"future": True, "connect_args": connect_args}
+    if is_sqlite:
+        engine_kwargs["poolclass"] = StaticPool
+
+    return create_engine(current_settings.database_url, **engine_kwargs)
+
+
+engine = create_engine_from_settings(settings)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 Base = declarative_base()
 

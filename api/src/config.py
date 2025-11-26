@@ -11,7 +11,7 @@ class Settings:
 
     database_url: str = field(
         default_factory=lambda: os.getenv(
-            "DATABASE_URL", "postgresql+psycopg2://postgres:postgres@db:5432/postgres"
+            "DATABASE_URL", "postgresql+psycopg://postgres:postgres@db:5432/postgres"
         )
     )
     secret_key: str = field(default_factory=lambda: os.getenv("SECRET_KEY", "dev-secret-key"))

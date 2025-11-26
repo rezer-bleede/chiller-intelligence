@@ -10,6 +10,11 @@ Build and start the stack (API + web UI):
 docker-compose up --build
 ```
 
+The API container now uses the PostgreSQL **psycopg** driver (v3). If you are running the API
+outside Docker, make sure to install dependencies with `pip install -r api/requirements.txt` and
+set `DATABASE_URL` to a psycopg connection string such as
+`postgresql+psycopg://postgres:postgres@localhost:5432/postgres`.
+
 The React frontend is available at http://localhost:3000 and communicates with the API using
 the `VITE_API_BASE_URL` defined in `docker-compose.yml`.
 
@@ -24,6 +29,16 @@ docker-compose exec api alembic upgrade head
 ```bash
 cd api
 uvicorn src.main:app --reload
+```
+
+### Running tests
+
+Install dependencies and execute the FastAPI unit/integration suite:
+
+```bash
+cd api
+pip install -r requirements.txt
+pytest
 ```
 
 ### Running the frontend locally

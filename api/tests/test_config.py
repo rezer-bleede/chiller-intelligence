@@ -7,12 +7,12 @@ def test_settings_apply_default_values_when_env_missing(monkeypatch):
 
     settings = get_settings()
 
-    assert settings.database_url == "postgresql+psycopg2://postgres:postgres@db:5432/postgres"
+    assert settings.database_url == "postgresql+psycopg://postgres:postgres@db:5432/postgres"
     assert settings.secret_key == "dev-secret-key"
 
 
 def test_settings_reads_environment(monkeypatch):
-    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg2://user:pass@localhost:5432/db")
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://user:pass@localhost:5432/db")
     monkeypatch.setenv("SECRET_KEY", "test-secret")
 
     settings = get_settings()
