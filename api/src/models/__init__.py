@@ -3,6 +3,7 @@ from .organization import Organization, OrganizationType
 from .user import User, UserRole
 from .building import Building
 from .chiller_unit import ChillerUnit
+from .chiller_telemetry import ChillerTelemetry
 from .data_source_config import DataSourceConfig, DataSourceType
 from .alert_rule import AlertRule, ConditionOperator, AlertSeverity
 
@@ -13,6 +14,7 @@ __all__ = [
     "UserRole",
     "Building",
     "ChillerUnit",
+    "ChillerTelemetry",
     "DataSourceConfig",
     "DataSourceType",
     "AlertRule",
