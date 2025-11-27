@@ -10,7 +10,7 @@ const App = () => {
 
   return (
     <Routes>
-      <Route element={<AuthRoutes />} />
+      <Route path="/*" element={<AuthRoutes />} />
       <Route
         path="/"
         element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
