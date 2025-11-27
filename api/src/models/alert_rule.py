@@ -21,10 +21,10 @@ from .chiller_unit import ChillerUnit
 
 
 class ConditionOperator(str, Enum):
-    GT = ">"
-    LT = "<"
-    GTE = ">="
-    LTE = "<="
+    GT = "GT"
+    LT = "LT"
+    GTE = "GTE"
+    LTE = "LTE"
 
 
 class AlertSeverity(str, Enum):
