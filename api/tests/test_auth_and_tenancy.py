@@ -124,7 +124,7 @@ def test_full_crud_for_chiller_stack(client):
             "chiller_unit_id": chiller["id"],
             "name": "High Temp",
             "metric_key": "temp",
-            "condition_operator": ">",
+            "condition_operator": "GT",
             "threshold_value": 5.0,
             "severity": "WARNING",
             "is_active": True,

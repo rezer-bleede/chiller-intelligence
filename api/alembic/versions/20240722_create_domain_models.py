@@ -21,7 +21,7 @@ organization_type = sa.Enum(
 )
 user_role = sa.Enum("ORG_ADMIN", "ANALYST", "VIEWER", name="user_role")
 data_source_type = sa.Enum("MQTT", "HTTP", "FILE_UPLOAD", name="data_source_type")
-condition_operator = sa.Enum(">", "<", ">=", "<=", name="condition_operator")
+condition_operator = sa.Enum("GT", "LT", "GTE", "LTE", name="condition_operator")
 alert_severity = sa.Enum("INFO", "WARNING", "CRITICAL", name="alert_severity")
 
 
