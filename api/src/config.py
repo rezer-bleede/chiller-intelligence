@@ -20,10 +20,13 @@ class Settings:
             origin.strip()
             for origin in os.getenv(
                 "ALLOWED_ORIGINS",
-                "http://localhost:3000,http://web:80,http://localhost:5173,http://127.0.0.1:5173",
+                "http://localhost:3000,http://web:80,http://localhost:5173,http://127.0.0.1:5173,http://data-generator",
             ).split(",")
             if origin.strip()
         ]
+    )
+    service_token: str = field(
+        default_factory=lambda: os.getenv("GENERATOR_SERVICE_TOKEN", "service-token-xyz")
     )
 
 

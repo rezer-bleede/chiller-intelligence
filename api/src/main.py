@@ -12,6 +12,7 @@ from src.routers.buildings import router as buildings_router
 from src.routers.chiller_units import router as chiller_units_router
 from src.routers.data_sources import router as data_sources_router
 from src.routers.organizations import router as organizations_router
+from src.routers.telemetry import router as telemetry_router
 
 app = FastAPI(title="Chiller Intelligence API")
 
@@ -37,3 +38,4 @@ app.include_router(buildings_router)
 app.include_router(chiller_units_router)
 app.include_router(data_sources_router)
 app.include_router(alert_rules_router)
+app.include_router(telemetry_router)

@@ -19,6 +19,8 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/postgres
       SECRET_KEY: dev-secret-key
+      GENERATOR_SERVICE_TOKEN: service-token-xyz
+      ALLOWED_ORIGINS: http://localhost:3000,http://web:80,http://localhost:5173,http://127.0.0.1:5173,http://data-generator
     ports:
       - "8000:8000"
 
@@ -30,6 +32,15 @@ services:
       - VITE_API_BASE_URL=http://api:8000
     ports:
       - "3000:80"
+
+  data-generator:
+    build: ./data-generator
+    container_name: data-generator
+    depends_on:
+      - api
+    environment:
+      BACKEND_API_URL: http://api:8000
+      GENERATOR_SERVICE_TOKEN: service-token-xyz
 
 volumes:
   db_data:

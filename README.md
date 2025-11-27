@@ -91,5 +91,23 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/buildings
 - `/chiller-units` – CRUD for chillers tied to the org's buildings.
 - `/data-sources` – CRUD for data source configurations of chiller units.
 - `/alert-rules` – CRUD for alert rules of chiller units.
+- `/telemetry/ingest` – ingest chiller telemetry for the authenticated organization or trusted generator.
 
 All endpoints enforce multi-tenancy: authenticated users can access only the records belonging to their organization.
+
+## Demo Mode
+
+Running `docker-compose up --build` now bootstraps a complete demo tenant and connects it to a synthetic data generator.
+
+### Demo Admin Login
+
+- Email: `demo@demo.com`
+- Password: `demo123`
+
+### Live Data Generator
+
+- A `data-generator` container streams synthetic telemetry every 5 seconds.
+- Telemetry is sent to `/telemetry/ingest` using the internal service token configured via `GENERATOR_SERVICE_TOKEN`.
+- The generator automatically discovers demo chillers via `/chiller-units` and rotates through them in a round-robin loop.
+
+Use these defaults to explore the UI with buildings, chillers, alert rules, and live metrics immediately after the stack starts.
