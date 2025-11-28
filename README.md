@@ -16,7 +16,10 @@ set `DATABASE_URL` to a psycopg connection string such as
 `postgresql+psycopg://postgres:postgres@localhost:5432/postgres`.
 
 The React frontend is available at http://localhost:3000 and communicates with the API using
-the `VITE_API_BASE_URL` defined in `docker-compose.yml`.
+the `VITE_API_BASE_URL` defined in `docker-compose.yml`. If the variable is absent during local
+development, the web client now falls back to `http://localhost:8000`—but you should still set
+`VITE_API_BASE_URL` to match the FastAPI server you are running to avoid browser requests being
+sent to the Vite dev server (which results in 405 errors for routes such as `/auth/login`).
 
 Run database migrations inside the API container:
 
