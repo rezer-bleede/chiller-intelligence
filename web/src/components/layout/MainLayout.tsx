@@ -1,7 +1,11 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../store/authStore';
 
-const MainLayout = () => {
+type MainLayoutProps = {
+  children: React.ReactNode;
+};
+
+const MainLayout = ({ children }: MainLayoutProps) => {
   const { user, organization, logout } = useAuth();
 
   return (
@@ -45,9 +49,7 @@ const MainLayout = () => {
             </button>
           </div>
         </header>
-        <main className="content-area">
-          <Outlet />
-        </main>
+        <main className="content-area">{children}</main>
       </div>
     </div>
   );

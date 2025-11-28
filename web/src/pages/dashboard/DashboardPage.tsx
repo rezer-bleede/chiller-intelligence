@@ -12,6 +12,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const load = async () => {
+      console.log('DashboardPage mounted');
       try {
         const [buildings, chillers, alerts] = await Promise.all([
           listBuildings(),
@@ -20,6 +21,7 @@ const DashboardPage = () => {
         ]);
         setStats({ buildings: buildings.length, chillers: chillers.length, alertRules: alerts.length });
       } catch (err: any) {
+        console.error('Failed to load dashboard data:', err);
         setError(err?.response?.data?.detail ?? 'Unable to load dashboard data.');
       } finally {
         setLoading(false);
