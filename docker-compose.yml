@@ -25,11 +25,12 @@ services:
       - "8000:8000"
 
   web:
-    build: ./web
+    build:
+      context: ./web
+      args:
+        VITE_API_BASE_URL: /api
     depends_on:
       - api
-    environment:
-      - VITE_API_BASE_URL=http://api:8000
     ports:
       - "3000:80"
 
