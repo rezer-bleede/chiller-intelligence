@@ -95,7 +95,7 @@ def test_full_crud_for_chiller_stack(client):
     ).json()
 
     chiller = client.post(
-        "/chiller-units",
+        "/chiller_units",
         json={
             "building_id": building["id"],
             "name": "Chiller 1",
@@ -119,7 +119,7 @@ def test_full_crud_for_chiller_stack(client):
     data_source_id = data_source.json()["id"]
 
     alert_rule = client.post(
-        "/alert-rules",
+        "/alert_rules",
         json={
             "chiller_unit_id": chiller["id"],
             "name": "High Temp",
@@ -134,7 +134,7 @@ def test_full_crud_for_chiller_stack(client):
     assert alert_rule.status_code == status.HTTP_201_CREATED
 
     ds_list = client.get("/data-sources", headers=auth_header(token)).json()
-    ar_list = client.get("/alert-rules", headers=auth_header(token)).json()
+    ar_list = client.get("/alert_rules", headers=auth_header(token)).json()
 
     assert len(ds_list) == 1
     assert ds_list[0]["id"] == data_source_id

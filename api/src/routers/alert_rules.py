@@ -9,7 +9,7 @@ from src.models import AlertRule, ChillerUnit, User
 from src.schemas.alert_rule import AlertRuleCreate, AlertRuleResponse, AlertRuleUpdate
 from src.services.tenancy import get_alert_rule_for_org, get_chiller_for_org
 
-router = APIRouter(prefix="/alert-rules", tags=["alert_rules"])
+router = APIRouter(prefix="/alert_rules", tags=["alert_rules"])
 
 
 @router.get("", response_model=list[AlertRuleResponse])
