@@ -6,6 +6,7 @@ from .chiller_unit import ChillerUnit
 from .chiller_telemetry import ChillerTelemetry
 from .data_source_config import DataSourceConfig, DataSourceType
 from .alert_rule import AlertRule, ConditionOperator, AlertSeverity
+from .dashboard_layout import DashboardLayout
 
 __all__ = [
     "Organization",
@@ -20,4 +21,5 @@ __all__ = [
     "AlertRule",
     "ConditionOperator",
     "AlertSeverity",
+    "DashboardLayout",
 ]

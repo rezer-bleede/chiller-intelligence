@@ -61,6 +61,13 @@ layouts. Key dashboard visuals include multi-axis efficiency charts, grouped con
 sparkline KPI cards, and per-chiller circuit analytics. You can toggle dark mode from the top
 navigation in the app shell.
 
+### Dashboard layout editing
+
+- The dashboard is organized into **Overview**, **Equipment & Health**, and **Telemetry & Trends** sections.
+- Widgets inside each section are draggable and resizable; click **Edit layout** to rearrange, save, or reset to defaults.
+- Layouts are persisted per user and organization via the `/dashboard-layouts/{page_key}` API and survive page reloads.
+- The left navigation now supports a collapsible mode with state persisted in `localStorage` for a decluttered experience.
+
 ### Frontend tests
 
 ```bash
@@ -109,6 +116,7 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/buildings
 - `/chiller-units` – CRUD for chillers tied to the org's buildings.
 - `/data-sources` – CRUD for data source configurations of chiller units.
 - `/alert-rules` – CRUD for alert rules of chiller units.
+- `/dashboard-layouts/{page_key}` – get or save dashboard layouts per user and organization.
 - `/telemetry/ingest` – ingest chiller telemetry for the authenticated organization or trusted generator.
 
 All endpoints enforce multi-tenancy: authenticated users can access only the records belonging to their organization.

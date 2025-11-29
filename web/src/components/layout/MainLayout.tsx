@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../store/authStore';
+import { useUi } from '../../store/uiStore';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -18,6 +19,7 @@ type MainLayoutProps = {
 
 const MainLayout = ({ children }: MainLayoutProps) => {
   const { user, organization, logout } = useAuth();
+  const { sidebarCollapsed, toggleSidebarCollapsed } = useUi();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     (localStorage.getItem('theme') as 'light' | 'dark') || 'light',
@@ -46,14 +48,19 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     <div className={theme === 'dark' ? 'dark' : ''}>
       <div className="flex min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
         <aside
-          className={`fixed inset-y-0 left-0 z-30 w-72 transform bg-gradient-to-b from-slate-900 to-slate-800 px-4 py-6 shadow-xl transition-transform duration-200 md:static md:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-30 transform bg-gradient-to-b from-slate-900 to-slate-800 px-4 py-6 shadow-xl transition-all duration-200 md:static md:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          } ${sidebarCollapsed ? 'md:w-24' : 'md:w-72'} w-72`}
         >
           <div className="flex items-center justify-between px-2">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-slate-400">Chiller</p>
-              <h2 className="text-2xl font-semibold text-white">Intelligence</h2>
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-white/10 px-3 py-2 text-lg">❄️</div>
+              {!sidebarCollapsed && (
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-slate-400">Chiller</p>
+                  <h2 className="text-2xl font-semibold text-white">Intelligence</h2>
+                </div>
+              )}
             </div>
             <button
               type="button"
@@ -68,14 +75,19 @@ const MainLayout = ({ children }: MainLayoutProps) => {
             {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} className={navLinkClasses} onClick={() => setSidebarOpen(false)}>
                 <span className="text-lg">{item.icon}</span>
-                <span>{item.label}</span>
+                {!sidebarCollapsed && <span>{item.label}</span>}
               </NavLink>
             ))}
           </nav>
           <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-            <p className="text-xs uppercase tracking-wide text-slate-400">Organization</p>
-            <p className="font-semibold text-white">{organization?.name ?? 'Organization'}</p>
-            <p className="text-xs text-slate-300">{organization?.type ?? 'Cooling portfolio'}</p>
+            {!sidebarCollapsed && (
+              <>
+                <p className="text-xs uppercase tracking-wide text-slate-400">Organization</p>
+                <p className="font-semibold text-white">{organization?.name ?? 'Organization'}</p>
+                <p className="text-xs text-slate-300">{organization?.type ?? 'Cooling portfolio'}</p>
+              </>
+            )}
+            {sidebarCollapsed && <p className="text-center text-xs text-slate-200">{organization?.name ?? 'Org'}</p>}
           </div>
         </aside>
 
@@ -84,11 +96,19 @@ const MainLayout = ({ children }: MainLayoutProps) => {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm transition hover:border-brand-500 hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm transition hover:border-brand-500 hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 md:hidden"
                 onClick={() => setSidebarOpen((open) => !open)}
                 aria-label="Toggle navigation"
               >
                 ☰
+              </button>
+              <button
+                type="button"
+                className="hidden rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-sm transition hover:border-brand-500 hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 md:inline-flex"
+                onClick={toggleSidebarCollapsed}
+                aria-label="Collapse sidebar"
+              >
+                {sidebarCollapsed ? '➡️' : '⬅️'}
               </button>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Live plant view</p>
