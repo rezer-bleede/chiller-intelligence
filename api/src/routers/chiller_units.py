@@ -9,7 +9,7 @@ from src.models import Building, ChillerUnit, User
 from src.schemas.chiller_unit import ChillerUnitCreate, ChillerUnitResponse, ChillerUnitUpdate
 from src.services.tenancy import get_building_for_org, get_chiller_for_org
 
-router = APIRouter(prefix="/chiller-units", tags=["chiller_units"])
+router = APIRouter(prefix="/chiller_units", tags=["chiller_units"])
 
 
 @router.get("", response_model=list[ChillerUnitResponse])
