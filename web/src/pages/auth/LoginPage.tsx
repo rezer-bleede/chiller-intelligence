@@ -27,33 +27,46 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="content-area" style={{ maxWidth: 420, margin: '60px auto', background: '#fff', padding: 24, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <FormInput
-          id="email"
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <FormInput
-          id="password"
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <ErrorMessage message={error} />
-        <div className="form-actions" style={{ marginTop: 12 }}>
-          <button type="submit" className="primary" disabled={loading}>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-slate-100 px-4 py-10 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+      <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/80">
+        <div className="mb-8 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-500">Chiller Intelligence</p>
+          <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">Sign in to your workspace</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Monitor efficiency, costs, and sustainability in real time.</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <FormInput
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <FormInput
+            id="password"
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <ErrorMessage message={error} />
+          <button
+            type="submit"
+            className="flex w-full items-center justify-center rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-300"
+            disabled={loading}
+          >
             {loading ? 'Signing in...' : 'Login'}
           </button>
-          <Link to="/register">Create an account</Link>
-        </div>
-      </form>
+        </form>
+        <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
+          New here?{' '}
+          <Link to="/register" className="font-semibold text-brand-600 hover:text-brand-500">
+            Create an account
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };

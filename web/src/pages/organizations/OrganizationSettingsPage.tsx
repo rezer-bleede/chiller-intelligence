@@ -1,9 +1,9 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { getOrganization, updateOrganization, Organization } from '../../api/organizations';
-import SelectInput from '../../components/common/SelectInput';
-import FormInput from '../../components/common/FormInput';
-import Loading from '../../components/common/Loading';
 import ErrorMessage from '../../components/common/ErrorMessage';
+import FormInput from '../../components/common/FormInput';
+import SelectInput from '../../components/common/SelectInput';
+import Loading from '../../components/common/Loading';
 
 const OrganizationSettingsPage = () => {
   const [organization, setOrganization] = useState<Organization | null>(null);
@@ -40,10 +40,13 @@ const OrganizationSettingsPage = () => {
   if (!organization) return <Loading />;
 
   return (
-    <div>
-      <h1>Organization Settings</h1>
+    <div className="mx-auto max-w-3xl space-y-6 rounded-2xl border border-slate-200 bg-white p-8 shadow-card dark:border-slate-800 dark:bg-slate-900">
+      <div>
+        <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Workspace</p>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Organization Settings</h1>
+      </div>
       <ErrorMessage message={error} />
-      <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <FormInput
           id="org_name"
           label="Organization Name"
@@ -62,7 +65,11 @@ const OrganizationSettingsPage = () => {
             { label: 'ESCO', value: 'ESCO' },
           ]}
         />
-        <button type="submit" className="primary" disabled={saving}>
+        <button
+          type="submit"
+          className="rounded-xl bg-brand-600 px-6 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-300"
+          disabled={saving}
+        >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </form>
