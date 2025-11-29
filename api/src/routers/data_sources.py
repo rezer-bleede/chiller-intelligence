@@ -9,7 +9,7 @@ from src.models import ChillerUnit, DataSourceConfig, User
 from src.schemas.data_source import DataSourceCreate, DataSourceResponse, DataSourceUpdate
 from src.services.tenancy import get_chiller_for_org, get_data_source_for_org
 
-router = APIRouter(prefix="/data-sources", tags=["data_sources"])
+router = APIRouter(prefix="/data_sources", tags=["data_sources"])
 
 
 @router.get("", response_model=list[DataSourceResponse])

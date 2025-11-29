@@ -107,7 +107,7 @@ def test_full_crud_for_chiller_stack(client):
     ).json()
 
     data_source = client.post(
-        "/data-sources",
+        "/data_sources",
         json={
             "chiller_unit_id": chiller["id"],
             "type": "MQTT",
@@ -133,7 +133,7 @@ def test_full_crud_for_chiller_stack(client):
     )
     assert alert_rule.status_code == status.HTTP_201_CREATED
 
-    ds_list = client.get("/data-sources", headers=auth_header(token)).json()
+    ds_list = client.get("/data_sources", headers=auth_header(token)).json()
     ar_list = client.get("/alert_rules", headers=auth_header(token)).json()
 
     assert len(ds_list) == 1
@@ -141,5 +141,5 @@ def test_full_crud_for_chiller_stack(client):
     assert len(ar_list) == 1
     assert ar_list[0]["name"] == "High Temp"
 
-    delete_resp = client.delete(f"/data-sources/{data_source_id}", headers=auth_header(token))
+    delete_resp = client.delete(f"/data_sources/{data_source_id}", headers=auth_header(token))
     assert delete_resp.status_code == status.HTTP_204_NO_CONTENT
