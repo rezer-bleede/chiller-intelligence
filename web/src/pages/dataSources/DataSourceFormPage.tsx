@@ -1,16 +1,10 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { listChillerUnits, ChillerUnit } from '../../api/chillerUnits';
-import {
-  DataSourcePayload,
-  DataSourceType,
-  createDataSource,
-  getDataSource,
-  updateDataSource,
-} from '../../api/dataSources';
-import SelectInput from '../../components/common/SelectInput';
-import FormInput from '../../components/common/FormInput';
+import { ChillerUnit, listChillerUnits } from '../../api/chillerUnits';
+import { DataSourcePayload, DataSourceType, createDataSource, getDataSource, updateDataSource } from '../../api/dataSources';
 import ErrorMessage from '../../components/common/ErrorMessage';
+import FormInput from '../../components/common/FormInput';
+import SelectInput from '../../components/common/SelectInput';
 import Loading from '../../components/common/Loading';
 
 const DataSourceFormPage = () => {
@@ -77,24 +71,31 @@ const DataSourceFormPage = () => {
   if (loading) return <Loading />;
 
   return (
-    <div style={{ maxWidth: 520 }}>
-      <h1>{isEdit ? 'Edit Data Source' : 'Add Data Source'}</h1>
+    <div className="mx-auto max-w-3xl space-y-6 rounded-2xl border border-slate-200 bg-white p-8 shadow-card dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{isEdit ? 'Update' : 'Create'}</p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{isEdit ? 'Edit Data Source' : 'Add Data Source'}</h1>
+        </div>
+        <button
+          className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:text-slate-100"
+          type="button"
+          onClick={() => navigate('/data-sources')}
+        >
+          Back
+        </button>
+      </div>
+
       <ErrorMessage message={error} />
-      <form onSubmit={handleSubmit}>
-        <FormInput
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <SelectInput
           id="chiller_unit"
           label="Chiller Unit"
           value={form.chiller_unit_id}
           onChange={(e) => setForm({ ...form, chiller_unit_id: Number(e.target.value) })}
-          list="chiller-units-options"
+          options={chillerUnits.map((unit) => ({ label: unit.name, value: unit.id }))}
         />
-        <datalist id="chiller-units-options">
-          {chillerUnits.map((unit) => (
-            <option key={unit.id} value={unit.id}>
-              {unit.name}
-            </option>
-          ))}
-        </datalist>
         <SelectInput
           id="type"
           label="Type"
@@ -106,20 +107,30 @@ const DataSourceFormPage = () => {
             { label: 'File Upload', value: 'FILE_UPLOAD' },
           ]}
         />
-        <div className="form-group">
-          <label htmlFor="connection_params">Connection Params (JSON)</label>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="connection_params" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Connection Params (JSON)
+          </label>
           <textarea
             id="connection_params"
             rows={6}
             value={rawParams}
             onChange={(e) => setRawParams(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-brand-400 dark:focus:ring-brand-700/40"
           />
         </div>
-        <div className="form-actions">
-          <button className="secondary" type="button" onClick={() => navigate('/data-sources')}>
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <button
+            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:text-slate-100"
+            type="button"
+            onClick={() => navigate('/data-sources')}
+          >
             Cancel
           </button>
-          <button className="primary" type="submit">
+          <button
+            className="rounded-xl bg-brand-600 px-6 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-300"
+            type="submit"
+          >
             Save
           </button>
         </div>

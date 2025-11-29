@@ -56,6 +56,21 @@ The frontend handles registration/login plus CRUD flows for organization setting
 chiller units, data sources, and alert rules. Configure all platform entities through the UI
 instead of CLI commands or configuration files.
 
+The UI now uses TailwindCSS with dark-mode support, Recharts-powered dashboards, and responsive
+layouts. Key dashboard visuals include multi-axis efficiency charts, grouped consumption bars,
+sparkline KPI cards, and per-chiller circuit analytics. You can toggle dark mode from the top
+navigation in the app shell.
+
+### Frontend tests
+
+```bash
+cd web
+npm test
+```
+
+Vitest is configured with jsdom; ResizeObserver is mocked for chart components. Tests cover the
+modern dashboard surface and core KPI widgets.
+
 ## Health Check
 
 After the stack is running, verify the API is healthy:

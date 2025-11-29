@@ -1,17 +1,10 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { listChillerUnits, ChillerUnit } from '../../api/chillerUnits';
-import {
-  AlertRulePayload,
-  Severity,
-  Operator,
-  createAlertRule,
-  getAlertRule,
-  updateAlertRule,
-} from '../../api/alertRules';
+import { AlertRulePayload, Operator, Severity, createAlertRule, getAlertRule, updateAlertRule } from '../../api/alertRules';
+import { ChillerUnit, listChillerUnits } from '../../api/chillerUnits';
+import ErrorMessage from '../../components/common/ErrorMessage';
 import FormInput from '../../components/common/FormInput';
 import SelectInput from '../../components/common/SelectInput';
-import ErrorMessage from '../../components/common/ErrorMessage';
 import Loading from '../../components/common/Loading';
 
 const AlertRuleFormPage = () => {
@@ -78,24 +71,31 @@ const AlertRuleFormPage = () => {
   if (loading) return <Loading />;
 
   return (
-    <div style={{ maxWidth: 520 }}>
-      <h1>{isEdit ? 'Edit Alert Rule' : 'Add Alert Rule'}</h1>
+    <div className="mx-auto max-w-3xl space-y-6 rounded-2xl border border-slate-200 bg-white p-8 shadow-card dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{isEdit ? 'Update' : 'Create'}</p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{isEdit ? 'Edit Alert Rule' : 'Add Alert Rule'}</h1>
+        </div>
+        <button
+          className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:text-slate-100"
+          type="button"
+          onClick={() => navigate('/alert-rules')}
+        >
+          Back
+        </button>
+      </div>
+
       <ErrorMessage message={error} />
-      <form onSubmit={handleSubmit}>
-        <FormInput
+
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <SelectInput
           id="chiller_unit"
           label="Chiller Unit"
           value={form.chiller_unit_id}
           onChange={(e) => setForm({ ...form, chiller_unit_id: Number(e.target.value) })}
-          list="chiller-units-list"
+          options={chillerUnits.map((unit) => ({ label: unit.name, value: unit.id }))}
         />
-        <datalist id="chiller-units-list">
-          {chillerUnits.map((unit) => (
-            <option key={unit.id} value={unit.id}>
-              {unit.name}
-            </option>
-          ))}
-        </datalist>
         <FormInput
           id="name"
           label="Name"
@@ -141,22 +141,28 @@ const AlertRuleFormPage = () => {
             { label: 'Critical', value: 'CRITICAL' },
           ]}
         />
-        <div className="form-group">
-          <label htmlFor="is_active">
-            <input
-              id="is_active"
-              type="checkbox"
-              checked={form.is_active}
-              onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-            />{' '}
-            Active
-          </label>
+        <div className="md:col-span-2 flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+          <input
+            id="is_active"
+            type="checkbox"
+            className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+            checked={form.is_active}
+            onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+          />
+          <label htmlFor="is_active" className="cursor-pointer select-none">Active</label>
         </div>
-        <div className="form-actions">
-          <button className="secondary" type="button" onClick={() => navigate('/alert-rules')}>
+        <div className="md:col-span-2 flex items-center justify-end gap-3 pt-4">
+          <button
+            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:text-slate-100"
+            type="button"
+            onClick={() => navigate('/alert-rules')}
+          >
             Cancel
           </button>
-          <button className="primary" type="submit">
+          <button
+            className="rounded-xl bg-brand-600 px-6 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-300"
+            type="submit"
+          >
             Save
           </button>
         </div>
