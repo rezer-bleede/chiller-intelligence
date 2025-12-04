@@ -25,26 +25,28 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 const PieChartSimple = ({ data }: PieChartSimpleProps) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <PieChart>
-      <Tooltip />
-      <Pie
-        data={data}
-        dataKey="value"
-        nameKey="name"
-        cx="50%"
-        cy="50%"
-        innerRadius={60}
-        outerRadius={90}
-        labelLine={false}
-      label={renderCustomizedLabel}
-    >
-      {data.map((entry, index) => (
-        <Cell key={entry.name} fill={entry.color ?? '#6366f1'} />
-      ))}
-    </Pie>
-    </PieChart>
-  </ResponsiveContainer>
+  <div className="h-full min-h-[240px] w-full">
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Tooltip />
+        <Pie
+          data={data}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          innerRadius={60}
+          outerRadius={90}
+          labelLine={false}
+          label={renderCustomizedLabel}
+        >
+          {data.map((entry) => (
+            <Cell key={entry.name} fill={entry.color ?? '#6366f1'} />
+          ))}
+        </Pie>
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
 );
 
 export default PieChartSimple;

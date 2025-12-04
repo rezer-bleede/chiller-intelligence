@@ -270,21 +270,25 @@ export const buildWidgetRegistry = (stats?: DashboardStats): Record<string, Widg
     id: 'plant-efficiency',
     title: 'Plant efficiency vs benchmark',
     render: () => <EnergyEfficiencyChart data={efficiencyTrend} />,
+    minH: 9,
   },
   'cooling-consumption': {
     id: 'cooling-consumption',
     title: 'Cooling consumption (first vs second year)',
     render: () => <BarChartGrouped data={groupedCooling} firstLabel="First 12 months" secondLabel="Second 12 months" />,
+    minH: 10,
   },
   'equipment-efficiency': {
     id: 'equipment-efficiency',
     title: 'Equipment efficiency (pumps vs chillers)',
     render: () => <HorizontalBarChart data={equipmentEfficiency} />,
+    minH: 8,
   },
   'power-vs-cooling': {
     id: 'power-vs-cooling',
     title: 'Power consumed (%) and cooling provided (%)',
     render: () => <PieChartSimple data={pieData} />,
+    minH: 8,
   },
   'chiller-health': {
     id: 'chiller-health',
@@ -307,6 +311,7 @@ export const buildWidgetRegistry = (stats?: DashboardStats): Record<string, Widg
     ),
     frameless: true,
     hideHeader: false,
+    minH: 8,
   },
   'cooling-production': {
     id: 'cooling-production',
@@ -326,6 +331,7 @@ export const buildWidgetRegistry = (stats?: DashboardStats): Record<string, Widg
       </DashboardCard>
     ),
     hideHeader: true,
+    minH: 9,
   },
   'equipment-ratio': {
     id: 'equipment-ratio',
@@ -336,6 +342,7 @@ export const buildWidgetRegistry = (stats?: DashboardStats): Record<string, Widg
       </DashboardCard>
     ),
     hideHeader: true,
+    minH: 8,
   },
   'trend-ewt': {
     id: 'trend-ewt',
@@ -350,6 +357,7 @@ export const buildWidgetRegistry = (stats?: DashboardStats): Record<string, Widg
       </TrendCard>
     ),
     hideHeader: true,
+    minH: 5,
   },
   'trend-lwt': {
     id: 'trend-lwt',
@@ -364,6 +372,7 @@ export const buildWidgetRegistry = (stats?: DashboardStats): Record<string, Widg
       </TrendCard>
     ),
     hideHeader: true,
+    minH: 5,
   },
   'trend-power': {
     id: 'trend-power',
@@ -378,6 +387,7 @@ export const buildWidgetRegistry = (stats?: DashboardStats): Record<string, Widg
       </TrendCard>
     ),
     hideHeader: true,
+    minH: 5,
   },
   'circuit-telemetry': {
     id: 'circuit-telemetry',
@@ -420,6 +430,7 @@ export const buildWidgetRegistry = (stats?: DashboardStats): Record<string, Widg
       </div>
     ),
     hideHeader: true,
+    minH: 14,
   },
   };
 };
@@ -468,21 +479,21 @@ export const defaultLayouts: Record<DashboardPageKey, WidgetLayoutConfig[]> = {
     { widgetId: 'kpi-monthly-savings', x: 9, y: 0, w: 3, h: 3 },
     { widgetId: 'kpi-co2', x: 0, y: 3, w: 3, h: 3 },
     { widgetId: 'kpi-assets', x: 3, y: 3, w: 3, h: 3 },
-    { widgetId: 'plant-efficiency', x: 6, y: 3, w: 6, h: 5 },
-    { widgetId: 'cooling-consumption', x: 0, y: 8, w: 12, h: 5 },
+    { widgetId: 'plant-efficiency', x: 6, y: 3, w: 6, h: 9 },
+    { widgetId: 'cooling-consumption', x: 0, y: 12, w: 12, h: 10 },
   ],
   dashboard_equipment: [
-    { widgetId: 'equipment-efficiency', x: 0, y: 0, w: 6, h: 5 },
-    { widgetId: 'power-vs-cooling', x: 6, y: 0, w: 6, h: 5 },
-    { widgetId: 'chiller-health', x: 0, y: 5, w: 12, h: 8 },
-    { widgetId: 'cooling-production', x: 0, y: 13, w: 7, h: 5 },
-    { widgetId: 'equipment-ratio', x: 7, y: 13, w: 5, h: 5 },
+    { widgetId: 'equipment-efficiency', x: 0, y: 0, w: 6, h: 8 },
+    { widgetId: 'power-vs-cooling', x: 6, y: 0, w: 6, h: 8 },
+    { widgetId: 'chiller-health', x: 0, y: 8, w: 12, h: 8 },
+    { widgetId: 'cooling-production', x: 0, y: 16, w: 7, h: 9 },
+    { widgetId: 'equipment-ratio', x: 7, y: 16, w: 5, h: 8 },
   ],
   dashboard_telemetry: [
-    { widgetId: 'trend-ewt', x: 0, y: 0, w: 4, h: 4 },
-    { widgetId: 'trend-lwt', x: 4, y: 0, w: 4, h: 4 },
-    { widgetId: 'trend-power', x: 8, y: 0, w: 4, h: 4 },
-    { widgetId: 'circuit-telemetry', x: 0, y: 4, w: 12, h: 10 },
+    { widgetId: 'trend-ewt', x: 0, y: 0, w: 4, h: 5 },
+    { widgetId: 'trend-lwt', x: 4, y: 0, w: 4, h: 5 },
+    { widgetId: 'trend-power', x: 8, y: 0, w: 4, h: 5 },
+    { widgetId: 'circuit-telemetry', x: 0, y: 5, w: 12, h: 14 },
   ],
 };
 
