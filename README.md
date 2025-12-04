@@ -67,6 +67,7 @@ navigation in the app shell.
 - Widgets inside each section are draggable and resizable; click **Edit layout** to rearrange, save, or reset to defaults.
 - Layouts are persisted per user and organization via the `/dashboard-layouts/{page_key}` API and survive page reloads.
 - The left navigation now supports a collapsible mode with state persisted in `localStorage` for a decluttered experience.
+- Dashboard cards and charts now enforce responsive minimum heights and overflow handling (via react-grid-layout + Recharts `ResponsiveContainer`), preventing overlap on smaller screens such as a 13" laptop.
 
 ### Frontend tests
 

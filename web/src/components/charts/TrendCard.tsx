@@ -9,7 +9,7 @@ interface TrendCardProps {
 }
 
 const TrendCard = ({ title, value, delta, icon, children }: TrendCardProps) => (
-  <div className="card flex flex-col gap-4">
+  <div className="card flex h-full flex-col gap-4 overflow-hidden">
     <div className="flex items-center justify-between gap-3">
       <div>
         <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{title}</p>
@@ -20,7 +20,7 @@ const TrendCard = ({ title, value, delta, icon, children }: TrendCardProps) => (
         {icon ?? '📈'}
       </div>
     </div>
-    {children ? <div className="h-32">{children}</div> : null}
+    {children ? <div className="min-h-[140px] flex-1">{children}</div> : null}
   </div>
 );
 

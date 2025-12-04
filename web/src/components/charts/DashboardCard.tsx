@@ -8,7 +8,7 @@ interface DashboardCardProps {
 }
 
 const DashboardCard = ({ title, subtitle, actions, children }: DashboardCardProps) => (
-  <section className="card flex h-full flex-col gap-4">
+  <section className="card flex h-full flex-col gap-4 overflow-hidden">
     <div className="flex items-start justify-between gap-4">
       <div>
         <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{subtitle}</p>
@@ -16,7 +16,7 @@ const DashboardCard = ({ title, subtitle, actions, children }: DashboardCardProp
       </div>
       {actions}
     </div>
-    <div className="min-h-[180px] flex-1">{children}</div>
+    <div className="min-h-[200px] flex-1">{children}</div>
   </section>
 );
 
