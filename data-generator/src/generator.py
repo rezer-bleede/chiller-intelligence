@@ -29,7 +29,7 @@ class TelemetryPayload(BaseModel):
 
 async def fetch_chiller_units(client: httpx.AsyncClient) -> list[ChillerUnit]:
     response = await client.get(
-        f"{BACKEND_API_URL}/chiller-units",
+        f"{BACKEND_API_URL}/chiller_units",
         headers={"X-Service-Token": GENERATOR_SERVICE_TOKEN},
         timeout=10.0,
     )
