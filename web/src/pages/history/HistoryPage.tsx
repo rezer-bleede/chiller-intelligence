@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ColumnDef,
   PaginationState,
@@ -9,48 +9,69 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import dayjs from 'dayjs';
+import { fetchConsumptionEfficiency } from '../../api/analytics';
+import Loading from '../../components/common/Loading';
+import ErrorMessage from '../../components/common/ErrorMessage';
 
 interface HistoryRecord {
   id: number;
   date: string;
-  equipment: string;
-  load: number;
-  efficiency: number;
-  alarms: number;
-  notes: string;
+  cooling_rth: number;
+  power_kw: number;
+  efficiency: number | null;
 }
-
-const sampleHistory: HistoryRecord[] = [
-  { id: 1, date: '2024-11-01', equipment: 'Chiller U1', load: 72, efficiency: 0.63, alarms: 1, notes: 'Reset after optimization' },
-  { id: 2, date: '2024-11-02', equipment: 'Pump P1', load: 54, efficiency: 0.44, alarms: 0, notes: 'Stable' },
-  { id: 3, date: '2024-11-03', equipment: 'Chiller U2', load: 68, efficiency: 0.66, alarms: 2, notes: 'High ambient temp' },
-  { id: 4, date: '2024-11-04', equipment: 'Cooling Tower', load: 58, efficiency: 0.48, alarms: 0, notes: 'Water quality checked' },
-  { id: 5, date: '2024-11-05', equipment: 'Chiller U1', load: 74, efficiency: 0.62, alarms: 1, notes: 'Circuit A tuned' },
-  { id: 6, date: '2024-11-06', equipment: 'Chiller U3', load: 61, efficiency: 0.6, alarms: 0, notes: 'Normal operations' },
-  { id: 7, date: '2024-11-07', equipment: 'Pump P2', load: 49, efficiency: 0.46, alarms: 0, notes: 'Balanced flow' },
-  { id: 8, date: '2024-11-08', equipment: 'Chiller U2', load: 70, efficiency: 0.64, alarms: 1, notes: 'Setpoint tightened' },
-  { id: 9, date: '2024-11-09', equipment: 'Cooling Tower', load: 57, efficiency: 0.47, alarms: 0, notes: 'Fan staged down' },
-  { id: 10, date: '2024-11-10', equipment: 'Chiller U3', load: 62, efficiency: 0.59, alarms: 1, notes: 'Filter cleaned' },
-];
 
 const HistoryPage = () => {
   const [globalFilter, setGlobalFilter] = useState('');
+  const [records, setRecords] = useState<HistoryRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | undefined>();
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      setError(undefined);
+      try {
+        const start = dayjs().subtract(30, 'day').toISOString();
+        const data = await fetchConsumptionEfficiency({ start, granularity: 'day' });
+        const mapped: HistoryRecord[] = data.series.map((item, index) => ({
+          id: index + 1,
+          date: dayjs(item.timestamp).format('YYYY-MM-DD HH:mm'),
+          cooling_rth: item.cooling_rth,
+          power_kw: item.power_kw,
+          efficiency: item.efficiency_kwh_per_tr,
+        }));
+        setRecords(mapped);
+      } catch (err: any) {
+        setError(err?.response?.data?.detail ?? 'Unable to load historical data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   const columns = useMemo<ColumnDef<HistoryRecord>[]>(
     () => [
       { accessorKey: 'date', header: 'Date' },
-      { accessorKey: 'equipment', header: 'Equipment' },
-      { accessorKey: 'load', header: 'Load (%)' },
-      { accessorKey: 'efficiency', header: 'Efficiency (kWh/TR)' },
-      { accessorKey: 'alarms', header: 'Alarms' },
-      { accessorKey: 'notes', header: 'Notes' },
+      { accessorKey: 'cooling_rth', header: 'Cooling (RTh)' },
+      { accessorKey: 'power_kw', header: 'Power (kW)' },
+      {
+        accessorKey: 'efficiency',
+        header: 'Efficiency (kWh/TR)',
+        cell: ({ getValue }) => {
+          const value = getValue<number | null>();
+          return value ? value.toFixed(3) : '—';
+        },
+      },
     ],
     [],
   );
 
   const table = useReactTable({
-    data: sampleHistory,
+    data: records,
     columns,
     state: { globalFilter, pagination },
     onGlobalFilterChange: setGlobalFilter,
@@ -79,6 +100,12 @@ const HistoryPage = () => {
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card dark:border-slate-800 dark:bg-slate-900">
+        {loading ? (
+          <div className="p-6">
+            <Loading />
+          </div>
+        ) : null}
+        <ErrorMessage message={error} />
         <div className="overflow-auto">
           <table className="min-w-full text-left text-sm">
             <thead className="sticky top-0 bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-300">

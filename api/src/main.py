@@ -10,6 +10,7 @@ from src.middleware.tenant import TenantMiddleware
 from src.routers.alert_rules import router as alert_rules_router
 from src.routers.buildings import router as buildings_router
 from src.routers.chiller_units import router as chiller_units_router
+from src.routers.analytics import router as analytics_router
 from src.routers.dashboard_layouts import router as dashboard_layouts_router
 from src.routers.data_sources import router as data_sources_router
 from src.routers.organizations import router as organizations_router
@@ -41,3 +42,4 @@ app.include_router(data_sources_router)
 app.include_router(alert_rules_router)
 app.include_router(telemetry_router)
 app.include_router(dashboard_layouts_router)
+app.include_router(analytics_router)

@@ -27,6 +27,18 @@ Run database migrations inside the API container:
 docker-compose exec api alembic upgrade head
 ```
 
+### Historical analytics
+
+The API exposes `/analytics/*` endpoints that aggregate persisted telemetry. Requests accept date ranges, building/chiller filters,
+and granularities (minute, hour, day, month) to return ready-to-plot series for cooling load, power, efficiency, and CO₂ savings.
+Example usage:
+
+```bash
+TOKEN=... # JWT for your organization
+curl -H "Authorization: Bearer $TOKEN" "http://localhost:8000/analytics/plant-overview?granularity=day"
+curl -H "Authorization: Bearer $TOKEN" "http://localhost:8000/analytics/consumption-efficiency?start=2024-01-01"
+```
+
 ### Running the API locally
 
 ```bash
