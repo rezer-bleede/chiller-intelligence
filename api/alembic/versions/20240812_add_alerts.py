@@ -1,6 +1,6 @@
 """Add baseline values, alert events, and email recipients
 
-Revision ID: 20240812_add_alerts_and_baselines
+Revision ID: 20240812_add_alerts
 Revises: 20240801_add_dashboard_layouts
 Create Date: 2024-08-12
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
-revision = "20240812_add_alerts_and_baselines"
+revision = "20240812_add_alerts"
 down_revision = "20240801_add_dashboard_layouts"
 branch_labels = None
 depends_on = None
