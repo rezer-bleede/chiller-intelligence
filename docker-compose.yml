@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5433"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
 
@@ -22,7 +22,7 @@ services:
       GENERATOR_SERVICE_TOKEN: service-token-xyz
       ALLOWED_ORIGINS: http://localhost:3000,http://web:80,http://localhost:5173,http://127.0.0.1:5173,http://data-generator
     ports:
-      - "8000:8002"
+      - "8000:8000"
     volumes:
       - ./api:/app
 
@@ -33,7 +33,7 @@ services:
     environment:
       - VITE_API_BASE_URL=http://api:8000
     ports:
-      - "3000:81"
+      - "3000:80"
 
   data-generator:
     build: ./data-generator
