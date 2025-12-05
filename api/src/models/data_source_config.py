@@ -15,6 +15,7 @@ class DataSourceType(str, Enum):
     MQTT = "MQTT"
     HTTP = "HTTP"
     FILE_UPLOAD = "FILE_UPLOAD"
+    EXTERNAL_DB = "EXTERNAL_DB"
 
 
 class DataSourceConfig(Base):

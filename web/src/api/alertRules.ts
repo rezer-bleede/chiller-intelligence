@@ -1,7 +1,7 @@
 import client from './client';
 
 export type Operator = '>' | '<' | '>=' | '<=';
-export type Severity = 'INFO' | 'WARNING' | 'CRITICAL';
+export type AlertSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
 export interface AlertRule {
   id: number;
@@ -10,8 +10,9 @@ export interface AlertRule {
   metric_key: string;
   condition_operator: Operator;
   threshold_value: number;
-  severity: Severity;
+  severity: AlertSeverity;
   is_active: boolean;
+  recipient_emails: string[];
   chiller_unit?: {
     id: number;
     name: string;

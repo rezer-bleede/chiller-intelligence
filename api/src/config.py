@@ -28,6 +28,12 @@ class Settings:
     service_token: str = field(
         default_factory=lambda: os.getenv("GENERATOR_SERVICE_TOKEN", "service-token-xyz")
     )
+    smtp_host: str = field(default_factory=lambda: os.getenv("SMTP_HOST", ""))
+    smtp_port: int = field(default_factory=lambda: int(os.getenv("SMTP_PORT", "587")))
+    smtp_username: str = field(default_factory=lambda: os.getenv("SMTP_USERNAME", ""))
+    smtp_password: str = field(default_factory=lambda: os.getenv("SMTP_PASSWORD", ""))
+    smtp_use_tls: bool = field(default_factory=lambda: os.getenv("SMTP_USE_TLS", "true").lower() == "true")
+    email_from: str = field(default_factory=lambda: os.getenv("EMAIL_FROM", "alerts@chiller.local"))
 
 
 def get_settings() -> Settings:

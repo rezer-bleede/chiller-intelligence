@@ -15,6 +15,8 @@ from src.routers.dashboard_layouts import router as dashboard_layouts_router
 from src.routers.data_sources import router as data_sources_router
 from src.routers.organizations import router as organizations_router
 from src.routers.telemetry import router as telemetry_router
+from src.routers.baseline_values import router as baseline_values_router
+from src.routers.alerts import router as alerts_router
 
 app = FastAPI(title="Chiller Intelligence API")
 
@@ -40,6 +42,8 @@ app.include_router(buildings_router)
 app.include_router(chiller_units_router)
 app.include_router(data_sources_router)
 app.include_router(alert_rules_router)
+app.include_router(alerts_router)
 app.include_router(telemetry_router)
 app.include_router(dashboard_layouts_router)
 app.include_router(analytics_router)
+app.include_router(baseline_values_router)

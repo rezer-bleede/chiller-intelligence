@@ -13,6 +13,7 @@ from sqlalchemy import (
     String,
     func,
     true,
+    JSON,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -50,6 +51,9 @@ class AlertRule(Base):
     threshold_value: Mapped[float] = mapped_column(Float, nullable=False)
     severity: Mapped[AlertSeverity] = mapped_column(
         SQLEnum(AlertSeverity, name="alert_severity"), nullable=False
+    )
+    recipient_emails: Mapped[list[str]] = mapped_column(
+        JSON().with_variant(JSON, "sqlite"), nullable=False, default=list
     )
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=true(), default=True

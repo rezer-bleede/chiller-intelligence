@@ -1,6 +1,6 @@
 import client from './client';
 
-export type DataSourceType = 'MQTT' | 'HTTP' | 'FILE_UPLOAD';
+export type DataSourceType = 'MQTT' | 'HTTP' | 'FILE_UPLOAD' | 'EXTERNAL_DB';
 
 export interface DataSource {
   id: number;
@@ -36,9 +36,9 @@ export const createDataSource = async (payload: DataSourcePayload): Promise<Data
 
 export const updateDataSource = async (
   id: string,
-  payload: Partial<DataSourcePayload>
+  payload: Partial<DataSourcePayload>,
 ): Promise<DataSource> => {
-  const { data } = await client.patch<DataSource>(`/data_sources/${id}`);
+  const { data } = await client.patch<DataSource>(`/data_sources/${id}`, payload);
   return data;
 };
 
