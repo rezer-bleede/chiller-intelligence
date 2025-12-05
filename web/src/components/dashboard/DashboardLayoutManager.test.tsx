@@ -5,8 +5,8 @@ vi.mock('react-grid-layout', () => {
   const Responsive = ({ children, onDragStop, onResizeStop, layouts }: any) => (
     <div
       data-testid="mock-grid"
-      onClick={() => onDragStop?.([], layouts)}
-      onDoubleClick={() => onResizeStop?.([], layouts)}
+      onClick={() => onDragStop?.(layouts.lg, layouts)}
+      onDoubleClick={() => onResizeStop?.(layouts.lg, layouts)}
     >
       {typeof children === 'function' ? children('lg') : children}
     </div>
