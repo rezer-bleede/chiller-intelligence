@@ -76,9 +76,11 @@ const DashboardLayoutManager = ({ widgets, layoutConfig, editMode, onLayoutChang
   }, [layoutConfig, widgets]);
 
   const handleLayoutCommit = useCallback(
-    (_: Layout[], allLayouts: Layouts) => {
-      setLayouts(allLayouts);
-      const nextLayout = mapToConfig(allLayouts.lg ?? []);
+    (layout: Layout[], allLayouts: Layouts) => {
+      if (typeof allLayouts === 'object' && allLayouts !== null && 'lg' in allLayouts) {
+        setLayouts(allLayouts);
+      }
+      const nextLayout = mapToConfig(layout);
       onLayoutChange(nextLayout);
     },
     [onLayoutChange],
