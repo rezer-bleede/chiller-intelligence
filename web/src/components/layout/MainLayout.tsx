@@ -10,6 +10,8 @@ const navItems = [
   { to: '/chiller-units', label: 'Chiller Units', icon: '❄️' },
   { to: '/data-sources', label: 'Data Sources', icon: '🔌' },
   { to: '/alert-rules', label: 'Alert Rules', icon: '🚨' },
+  { to: '/alerts', label: 'Alerts', icon: '⚡' },
+  { to: '/baseline-values', label: 'Baselines', icon: '📐' },
   { to: '/settings/organization', label: 'Organization', icon: '⚙️' },
 ];
 

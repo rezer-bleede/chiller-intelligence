@@ -1,6 +1,13 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AlertRulePayload, Operator, Severity, createAlertRule, getAlertRule, updateAlertRule } from '../../api/alertRules';
+import {
+  AlertRulePayload,
+  AlertSeverity,
+  Operator,
+  createAlertRule,
+  getAlertRule,
+  updateAlertRule,
+} from '../../api/alertRules';
 import { ChillerUnit, listChillerUnits } from '../../api/chillerUnits';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import FormInput from '../../components/common/FormInput';
@@ -18,8 +25,9 @@ const AlertRuleFormPage = () => {
     metric_key: 'kw_per_ton',
     condition_operator: '>' as Operator,
     threshold_value: 0,
-    severity: 'INFO' as Severity,
+    severity: 'INFO' as AlertSeverity,
     is_active: true,
+    recipient_emails: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
@@ -40,8 +48,9 @@ const AlertRuleFormPage = () => {
             metric_key: data.metric_key,
             condition_operator: data.condition_operator as Operator,
             threshold_value: data.threshold_value,
-            severity: data.severity as Severity,
+            severity: data.severity as AlertSeverity,
             is_active: data.is_active,
+            recipient_emails: data.recipient_emails,
           });
         }
       } catch (err: any) {
@@ -134,13 +143,34 @@ const AlertRuleFormPage = () => {
           id="severity"
           label="Severity"
           value={form.severity}
-          onChange={(e) => setForm({ ...form, severity: e.target.value as Severity })}
+          onChange={(e) => setForm({ ...form, severity: e.target.value as AlertSeverity })}
           options={[
             { label: 'Info', value: 'INFO' },
             { label: 'Warning', value: 'WARNING' },
             { label: 'Critical', value: 'CRITICAL' },
           ]}
         />
+        <div className="md:col-span-2">
+          <label htmlFor="recipient_emails" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Recipient Emails
+          </label>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Comma-separated list of addresses to notify when the rule triggers.</p>
+          <textarea
+            id="recipient_emails"
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            rows={2}
+            value={form.recipient_emails.join(', ')}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                recipient_emails: e.target.value
+                  .split(',')
+                  .map((item) => item.trim())
+                  .filter(Boolean),
+              })
+            }
+          />
+        </div>
         <div className="md:col-span-2 flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
           <input
             id="is_active"

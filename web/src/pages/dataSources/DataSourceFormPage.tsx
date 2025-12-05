@@ -105,6 +105,7 @@ const DataSourceFormPage = () => {
             { label: 'MQTT', value: 'MQTT' },
             { label: 'HTTP', value: 'HTTP' },
             { label: 'File Upload', value: 'FILE_UPLOAD' },
+            { label: 'External Database', value: 'EXTERNAL_DB' },
           ]}
         />
         <div className="flex flex-col gap-2">
@@ -118,6 +119,9 @@ const DataSourceFormPage = () => {
             onChange={(e) => setRawParams(e.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-brand-400 dark:focus:ring-brand-700/40"
           />
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            For external databases include host, port, database, username, and password keys.
+          </p>
         </div>
         <div className="flex items-center justify-end gap-3 pt-2">
           <button

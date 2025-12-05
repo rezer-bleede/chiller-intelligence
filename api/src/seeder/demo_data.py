@@ -12,6 +12,7 @@ from src.db import SessionLocal
 from src.models import (
     AlertRule,
     AlertSeverity,
+    BaselineValue,
     Building,
     ChillerUnit,
     ConditionOperator,
@@ -100,6 +101,7 @@ def _create_alert_rules(session: Session, chillers: Sequence[ChillerUnit]) -> No
             threshold_value=40.0,
             severity=AlertSeverity.WARNING,
             is_active=True,
+            recipient_emails=["ops-team@example.com"],
         )
         low_delta_t = AlertRule(
             chiller_unit_id=chiller.id,
@@ -109,8 +111,32 @@ def _create_alert_rules(session: Session, chillers: Sequence[ChillerUnit]) -> No
             threshold_value=4.5,
             severity=AlertSeverity.INFO,
             is_active=True,
+            recipient_emails=["maintenance@example.com"],
         )
         session.add_all([high_power, low_delta_t])
+
+
+def _create_baselines(session: Session, organization: Organization) -> None:
+    session.add_all(
+        [
+            BaselineValue(
+                organization_id=organization.id,
+                name="Plant COP Target",
+                metric_key="cop",
+                value=3.8,
+                unit="COP",
+                notes="Target efficiency for the portfolio",
+            ),
+            BaselineValue(
+                organization_id=organization.id,
+                name="Power Demand Threshold",
+                metric_key="power_kw",
+                value=42.0,
+                unit="kW",
+                notes="Upper bound before operator review",
+            ),
+        ]
+    )
 
 
 def seed_demo_data() -> None:
@@ -126,6 +152,7 @@ def seed_demo_data() -> None:
         chillers = _create_chillers(session, buildings)
         _attach_data_sources(session, chillers)
         _create_alert_rules(session, chillers)
+        _create_baselines(session, organization)
 
         session.commit()
         print("[seeder] Demo data created successfully")

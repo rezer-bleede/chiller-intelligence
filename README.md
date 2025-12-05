@@ -68,6 +68,10 @@ The frontend handles registration/login plus CRUD flows for organization setting
 chiller units, data sources, and alert rules. Configure all platform entities through the UI
 instead of CLI commands or configuration files.
 
+New pages allow operators to manage baseline values (with CSV/XLSX import), review alert history
+with severity filters, and configure external database sources alongside MQTT/HTTP/file upload
+pipelines.
+
 The UI now uses TailwindCSS with dark-mode support, Recharts-powered dashboards, and responsive
 layouts. Key dashboard visuals include multi-axis efficiency charts, grouped consumption bars,
 sparkline KPI cards, and per-chiller circuit analytics. You can toggle dark mode from the top
@@ -90,7 +94,7 @@ navigation in the app shell.
 
 - The dashboard is organized into **Overview**, **Equipment & Health**, and **Telemetry & Trends** sections.
 - Widgets inside each section are draggable and resizable; click **Edit layout** to rearrange, save, or reset to defaults.
-- Layouts are persisted per user and organization via the `/dashboard-layouts/{page_key}` API and survive page reloads.
+- Layouts are persisted per user and organization via the `/dashboard-layouts/{page_key}` API, stored in the database, and survive restarts.
 - The left navigation now supports a collapsible mode with state persisted in `localStorage` for a decluttered experience.
 - Dashboard cards and charts now enforce responsive minimum heights and overflow handling (via react-grid-layout + Recharts `ResponsiveContainer`), preventing overlap on smaller screens such as a 13" laptop.
 
@@ -141,7 +145,9 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/buildings
 - `/buildings` – CRUD for buildings within the authenticated organization.
 - `/chiller-units` – CRUD for chillers tied to the org's buildings.
 - `/data-sources` – CRUD for data source configurations of chiller units.
+- `/baseline-values` – CRUD and CSV/XLSX import for baseline metrics tied to buildings/chillers.
 - `/alert-rules` – CRUD for alert rules of chiller units.
+- `/alerts` – List alert history with severity, time, and chiller filters plus summary counts.
 - `/dashboard-layouts/{page_key}` – get or save dashboard layouts per user and organization.
 - `/telemetry/ingest` – ingest chiller telemetry for the authenticated organization or trusted generator.
 
@@ -163,3 +169,25 @@ Running `docker-compose up --build` now bootstraps a complete demo tenant and co
 - The generator automatically discovers demo chillers via `/chiller-units` and rotates through them in a round-robin loop.
 
 Use these defaults to explore the UI with buildings, chillers, alert rules, and live metrics immediately after the stack starts.
+
+## External data sources
+
+Create or edit data sources with the **External DB** type to connect the platform to an existing
+database. Provide connection details in the Data Sources form; the backend accepts `EXTERNAL_DB`
+as a `DataSourceType`, allowing operators to stream readings without MQTT/HTTP brokers.
+
+## Baseline values
+
+The **Baselines** page lets you capture expected performance targets per building or chiller. Add
+records manually or use the **Import** workflow to upload CSV or XLSX files that include
+`name`, `metric_key`, `value`, optional `unit`/`notes`, and optional `building_id`/`chiller_unit_id`
+columns.
+
+## Alerts and notifications
+
+- The **Alerts** page shows a summary of counts by severity and a filtered feed of individual
+  alerts with timestamps and linked chillers/buildings.
+- Alert rules now support recipient emails. Configure SMTP credentials via the environment
+  variables `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_USE_TLS`, and
+  `EMAIL_FROM`. When telemetry triggers a rule, notifications are persisted and delivered to
+  the configured recipients.

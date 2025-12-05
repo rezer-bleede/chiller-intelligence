@@ -8,8 +8,10 @@ import DataSourcesListPage from '../pages/dataSources/DataSourcesListPage';
 import DataSourceFormPage from '../pages/dataSources/DataSourceFormPage';
 import AlertRulesListPage from '../pages/alertRules/AlertRulesListPage';
 import AlertRuleFormPage from '../pages/alertRules/AlertRuleFormPage';
+import AlertsPage from '../pages/alerts/AlertsPage';
 import OrganizationSettingsPage from '../pages/organizations/OrganizationSettingsPage';
 import HistoryPage from '../pages/history/HistoryPage';
+import BaselineValuesPage from '../pages/baselines/BaselineValuesPage';
 
 const AppRoutes = () => (
   <Routes>
@@ -26,6 +28,8 @@ const AppRoutes = () => (
     <Route path="alert-rules" element={<AlertRulesListPage />} />
     <Route path="alert-rules/new" element={<AlertRuleFormPage />} />
     <Route path="alert-rules/:id/edit" element={<AlertRuleFormPage />} />
+    <Route path="alerts" element={<AlertsPage />} />
+    <Route path="baseline-values" element={<BaselineValuesPage />} />
     <Route path="settings/organization" element={<OrganizationSettingsPage />} />
     <Route path="history" element={<HistoryPage />} />
   </Routes>

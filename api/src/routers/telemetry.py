@@ -6,7 +6,15 @@ from sqlalchemy.orm import Session
 from src.config import settings
 from src.constants import DEMO_ORG_NAME
 from src.db import get_db_session
-from src.models import Building, ChillerTelemetry, ChillerUnit, Organization, User
+from src.models import (
+    AlertRule,
+    Building,
+    ChillerTelemetry,
+    ChillerUnit,
+    Organization,
+    User,
+)
+from src.services.alert_engine import evaluate_alerts_for_payload
 from src.schemas.telemetry import TelemetryIngestRequest, TelemetryResponse
 
 router = APIRouter(prefix="/telemetry", tags=["telemetry"])
@@ -70,6 +78,14 @@ def ingest_telemetry(
         cop=payload.cop,
     )
     db.add(telemetry)
+
+    rules = (
+        db.query(AlertRule)
+        .filter(AlertRule.chiller_unit_id == chiller.id, AlertRule.is_active.is_(True))
+        .all()
+    )
+    evaluate_alerts_for_payload(db, chiller.id, payload, rules)
+
     db.commit()
     db.refresh(telemetry)
 
