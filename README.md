@@ -73,6 +73,19 @@ layouts. Key dashboard visuals include multi-axis efficiency charts, grouped con
 sparkline KPI cards, and per-chiller circuit analytics. You can toggle dark mode from the top
 navigation in the app shell.
 
+### Dashboard data sources
+
+- All KPI cards, charts, and telemetry panels read directly from the FastAPI analytics endpoints
+  (`/analytics/plant-overview`, `/analytics/consumption-efficiency`, `/analytics/equipment-metrics`,
+  and `/analytics/chiller-trends`).
+- Summary cards combine plant overview totals with live counts for buildings, chillers, and alert
+  rules.
+- Charts no longer use placeholder arrays: cooling/power charts are built from the consumption
+  series, efficiency and COP trends plot the analytics response, and chiller health/telemetry cards
+  render the latest `chiller-trends` samples.
+- If an endpoint returns no data yet, widgets now render a concise "No telemetry available" helper
+  instead of stale placeholders.
+
 ### Dashboard layout editing
 
 - The dashboard is organized into **Overview**, **Equipment & Health**, and **Telemetry & Trends** sections.

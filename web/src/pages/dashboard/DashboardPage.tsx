@@ -5,10 +5,17 @@ import { listChillerUnits } from '../../api/chillerUnits';
 import Loading from '../../components/common/Loading';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import { fetchDashboardLayout, saveDashboardLayout } from '../../api/dashboardLayouts';
+import {
+  fetchChillerTrends,
+  fetchConsumptionEfficiency,
+  fetchEquipmentMetrics,
+  fetchPlantOverview,
+} from '../../api/analytics';
 import DashboardLayoutManager, { WidgetDefinition, WidgetLayoutConfig } from '../../components/dashboard/DashboardLayoutManager';
 import {
   DashboardPageKey,
   DashboardStats,
+  DashboardData,
   buildWidgetRegistry,
   defaultLayouts,
   filterWidgetsForSection,
@@ -134,6 +141,12 @@ const DashboardPage = () => {
   const [activeSection, setActiveSection] = useState<DashboardPageKey>('dashboard_overview');
   const [stats, setStats] = useState<DashboardStats>({ buildings: 0, chillers: 0, alertRules: 0 });
   const [statsError, setStatsError] = useState<string | undefined>();
+  const [telemetryError, setTelemetryError] = useState<string | undefined>();
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    consumptionSeries: [],
+    equipmentMetrics: [],
+    chillerTrends: [],
+  });
 
   useEffect(() => {
     const loadStats = async () => {
@@ -151,7 +164,31 @@ const DashboardPage = () => {
     loadStats();
   }, []);
 
-  const registry = useMemo(() => buildWidgetRegistry(stats), [stats]);
+  useEffect(() => {
+    const loadTelemetry = async () => {
+      try {
+        const [overview, consumption, equipment, chillerTrends] = await Promise.all([
+          fetchPlantOverview(),
+          fetchConsumptionEfficiency(),
+          fetchEquipmentMetrics(),
+          fetchChillerTrends(),
+        ]);
+
+        setDashboardData({
+          overview,
+          consumptionSeries: consumption.series ?? [],
+          equipmentMetrics: equipment.units ?? [],
+          chillerTrends: chillerTrends.chillers ?? [],
+        });
+      } catch (err: any) {
+        setTelemetryError(err?.response?.data?.detail ?? 'Unable to load dashboard telemetry.');
+      }
+    };
+
+    loadTelemetry();
+  }, []);
+
+  const registry = useMemo(() => buildWidgetRegistry(stats, dashboardData), [dashboardData, stats]);
 
   return (
     <div className="space-y-6">
@@ -177,7 +214,7 @@ const DashboardPage = () => {
           ))}
         </div>
       </div>
-      <ErrorMessage message={statsError} />
+      <ErrorMessage message={statsError ?? telemetryError} />
       <DashboardSectionView sectionKey={activeSection} registry={registry} />
     </div>
   );
