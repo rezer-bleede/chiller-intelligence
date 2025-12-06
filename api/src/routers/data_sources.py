@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.auth.dependencies import get_current_user
@@ -27,12 +27,23 @@ def list_data_sources(
     )
 
 
+def _validate_connection_params(payload: DataSourceCreate | DataSourceUpdate):
+    if payload.type == "EXTERNAL_DB":
+        required_keys = {"host", "port", "database", "username", "password"}
+        if not required_keys.issubset(payload.connection_params.keys()):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Connection parameters for EXTERNAL_DB must include host, port, database, username, and password.",
+            )
+
+
 @router.post("", response_model=DataSourceResponse, status_code=status.HTTP_201_CREATED)
 def create_data_source(
     payload: DataSourceCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db_session),
 ):
+    _validate_connection_params(payload)
     get_chiller_for_org(db, payload.chiller_unit_id, current_user)
     data_source = DataSourceConfig(**payload.model_dump())
     db.add(data_source)
@@ -57,6 +68,7 @@ def update_data_source(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db_session),
 ):
+    _validate_connection_params(payload)
     data_source = get_data_source_for_org(db, data_source_id, current_user)
     update_data = payload.model_dump(exclude_unset=True)
     for field, value in update_data.items():

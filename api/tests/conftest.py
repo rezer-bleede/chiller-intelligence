@@ -34,6 +34,82 @@ def _override_get_db():
 app.dependency_overrides[get_db_session] = _override_get_db
 
 
+from src.models import (
+    Building,
+    ChillerUnit,
+    Organization,
+    OrganizationType,
+    User,
+)
+from src.auth.services import get_user_by_email, register_user  # noqa: E402
+
+
+@pytest.fixture
+def db_session() -> SessionLocal:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 @pytest.fixture
 def client():
     return TestClient(app)
+
+
+@pytest.fixture
+def default_organization(db_session: SessionLocal) -> Organization:
+    org = Organization(name="Default Org", type=OrganizationType.ENERGY_MGMT)
+    db_session.add(org)
+    db_session.commit()
+    db_session.refresh(org)
+    return org
+
+
+@pytest.fixture
+def default_user(db_session: SessionLocal, default_organization: Organization) -> User:
+    user = get_user_by_email(db_session, "test@example.com")
+    if user:
+        return user
+    user = register_user(
+        db_session, "test@example.com", "password", default_organization.id, "Test User"
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def default_building(db_session: SessionLocal) -> Building:
+    def _default_building(organization_id: int) -> Building:
+        building = Building(
+            name="Default Building",
+            organization_id=organization_id,
+            location="Default Location",
+        )
+        db_session.add(building)
+        db_session.commit()
+        db_session.refresh(building)
+        return building
+
+    return _default_building
+
+
+@pytest.fixture
+def default_chiller_unit(db_session: SessionLocal) -> ChillerUnit:
+    def _default_chiller_unit(building_id: int) -> ChillerUnit:
+        unit = ChillerUnit(
+            name="Default Chiller",
+            building_id=building_id,
+            manufacturer="Default Manufacturer",
+            model="Default Model",
+            capacity_tons=100.0,
+        )
+        db_session.add(unit)
+        db_session.commit()
+        db_session.refresh(unit)
+        return unit
+
+    return _default_chiller_unit
