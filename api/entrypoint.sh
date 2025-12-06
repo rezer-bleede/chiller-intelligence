@@ -11,10 +11,10 @@ while ! pg_isready -h db -p 5432 -q -U postgres; do
   sleep 1
 done
 
-echo "Database is ready. Dropping and recreating public schema..."
-export PGPASSWORD=postgres
-psql -h db -U postgres -d postgres -c "DROP SCHEMA IF EXISTS public CASCADE;"
-psql -h db -U postgres -d postgres -c "CREATE SCHEMA public;"
+# echo "Database is ready. Dropping and recreating public schema..."
+# export PGPASSWORD=postgres
+# psql -h db -U postgres -d postgres -c "DROP SCHEMA IF EXISTS public CASCADE;"
+# psql -h db -U postgres -d postgres -c "CREATE SCHEMA public;"
 
 # Run database migrations
 alembic upgrade head

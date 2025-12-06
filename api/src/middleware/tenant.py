@@ -47,16 +47,26 @@ class TenantMiddleware(BaseHTTPMiddleware):
         except jwt.PyJWTError:
             return JSONResponse(status_code=401, content={"detail": "Invalid token"})
 
-        session = SessionLocal()
         try:
-            user = session.get(User, payload.get("user_id"))
-            if user is None or user.organization_id != payload.get("organization_id"):
-                return JSONResponse(status_code=401, content={"detail": "Invalid token subject"})
+            db = request.state.db
+        except AttributeError:
+            db = SessionLocal()
+            request.state.db = db
+
+        try:
+            user = db.get(User, payload.get("user_id"))
+            if user is None:
+                return JSONResponse(status_code=404, content={"detail": "User not found"})
+            if user.organization_id != payload.get("organization_id"):
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "User does not belong to the correct organization"},
+                )
 
             request.state.user = user
             request.state.organization_id = user.organization_id
             response = await call_next(request)
         finally:
-            session.close()
+            db.close()
 
         return response
