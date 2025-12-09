@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { listAlertRules } from '../../api/alertRules';
 import { listBuildings } from '../../api/buildings';
@@ -147,6 +148,14 @@ const DashboardPage = () => {
     equipmentMetrics: [],
     chillerTrends: [],
   });
+  const [activeRange, setActiveRange] = useState({
+    start: dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
+    end: dayjs().format('YYYY-MM-DD'),
+  });
+  const [pendingRange, setPendingRange] = useState({
+    start: dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
+    end: dayjs().format('YYYY-MM-DD'),
+  });
 
   useEffect(() => {
     const loadStats = async () => {
@@ -167,13 +176,19 @@ const DashboardPage = () => {
   useEffect(() => {
     const loadTelemetry = async () => {
       try {
+        const rangeParams = {
+          start: dayjs(activeRange.start).startOf('day').toISOString(),
+          end: dayjs(activeRange.end).endOf('day').toISOString(),
+        };
+
         const [overview, consumption, equipment, chillerTrends] = await Promise.all([
-          fetchPlantOverview(),
-          fetchConsumptionEfficiency(),
-          fetchEquipmentMetrics(),
-          fetchChillerTrends(),
+          fetchPlantOverview(rangeParams),
+          fetchConsumptionEfficiency(rangeParams),
+          fetchEquipmentMetrics(rangeParams),
+          fetchChillerTrends(rangeParams),
         ]);
 
+        setTelemetryError(undefined);
         setDashboardData({
           overview,
           consumptionSeries: consumption.series ?? [],
@@ -186,7 +201,7 @@ const DashboardPage = () => {
     };
 
     loadTelemetry();
-  }, []);
+  }, [activeRange]);
 
   const registry = useMemo(() => buildWidgetRegistry(stats, dashboardData), [dashboardData, stats]);
 
@@ -198,6 +213,29 @@ const DashboardPage = () => {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Chiller performance cockpit</h1>
         </div>
         <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <label className="text-slate-600 dark:text-slate-200">Start</label>
+            <input
+              type="date"
+              value={pendingRange.start}
+              onChange={(e) => setPendingRange({ ...pendingRange, start: e.target.value })}
+              className="rounded-lg border border-slate-200 px-2 py-1 dark:border-slate-700 dark:bg-slate-900"
+            />
+            <label className="text-slate-600 dark:text-slate-200">End</label>
+            <input
+              type="date"
+              value={pendingRange.end}
+              onChange={(e) => setPendingRange({ ...pendingRange, end: e.target.value })}
+              className="rounded-lg border border-slate-200 px-2 py-1 dark:border-slate-700 dark:bg-slate-900"
+            />
+            <button
+              type="button"
+              onClick={() => setActiveRange(pendingRange)}
+              className="rounded-lg bg-brand-600 px-3 py-1 font-semibold text-white shadow-sm transition hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-300"
+            >
+              Apply
+            </button>
+          </div>
           {pageDefinitions.map((section) => (
             <button
               key={section.key}

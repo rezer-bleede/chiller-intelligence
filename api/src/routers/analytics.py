@@ -4,12 +4,11 @@ from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session
 
-from src.db import get_db_session
+from src.db import get_db_session, get_telemetry_session
 from src.models import Building, ChillerTelemetry, ChillerUnit
-from src.models.organization import Organization
 from src.models.user import User
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
@@ -26,6 +25,36 @@ def _get_org_id(request: Request) -> int:
     return current_user.organization_id
 
 
+def _ensure_scope(
+    db: Session,
+    org_id: int,
+    building_id: int | None,
+    chiller_id: int | None,
+):
+    if building_id is not None:
+        building = (
+            db.query(Building)
+            .filter(Building.id == building_id, Building.organization_id == org_id)
+            .first()
+        )
+        if building is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Building not found")
+
+    if chiller_id is not None:
+        chiller = (
+            db.query(ChillerUnit)
+            .join(Building)
+            .filter(
+                ChillerUnit.id == chiller_id,
+                Building.organization_id == org_id,
+                or_(building_id is None, ChillerUnit.building_id == building_id),
+            )
+            .first()
+        )
+        if chiller is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chiller not found")
+
+
 def _apply_filters(
     org_id: int,
     start: datetime | None,
@@ -33,16 +62,16 @@ def _apply_filters(
     building_id: int | None,
     chiller_id: int | None,
 ):
-    filters = [Organization.id == org_id]
+    filters = [ChillerTelemetry.organization_id == org_id]
 
     if start is not None:
         filters.append(ChillerTelemetry.timestamp >= start)
     if end is not None:
         filters.append(ChillerTelemetry.timestamp <= end)
     if building_id is not None:
-        filters.append(Building.id == building_id)
+        filters.append(ChillerTelemetry.building_id == building_id)
     if chiller_id is not None:
-        filters.append(ChillerUnit.id == chiller_id)
+        filters.append(ChillerTelemetry.chiller_unit_id == chiller_id)
 
     return and_(*filters)
 
@@ -68,13 +97,7 @@ def _bucket(granularity: Granularity, db: Session):
 
 
 def _base_query(org_id: int, db: Session):
-    return (
-        db.query(ChillerTelemetry)
-        .join(ChillerUnit)
-        .join(Building)
-        .join(Organization)
-        .filter(Organization.id == org_id)
-    )
+    return db.query(ChillerTelemetry).filter(ChillerTelemetry.organization_id == org_id)
 
 
 def _cooling_load_expr():
@@ -87,15 +110,17 @@ def _cooling_load_expr():
 def plant_overview(
     request: Request,
     db: Session = Depends(get_db_session),
+    telemetry_db: Session = Depends(get_telemetry_session),
     start: datetime | None = Query(None),
     end: datetime | None = Query(None),
     building_id: int | None = Query(None),
     chiller_unit_id: int | None = Query(None),
 ):
     org_id = _get_org_id(request)
+    _ensure_scope(db, org_id, building_id, chiller_unit_id)
     filters = _apply_filters(org_id, start, end, building_id, chiller_unit_id)
 
-    base = _base_query(org_id, db).filter(filters)
+    base = _base_query(org_id, telemetry_db).filter(filters)
 
     cooling_load_expr = _cooling_load_expr()
     totals = base.with_entities(
@@ -126,6 +151,7 @@ def plant_overview(
 def consumption_efficiency(
     request: Request,
     db: Session = Depends(get_db_session),
+    telemetry_db: Session = Depends(get_telemetry_session),
     granularity: Granularity = Query("day"),
     start: datetime | None = Query(None),
     end: datetime | None = Query(None),
@@ -133,11 +159,12 @@ def consumption_efficiency(
     chiller_unit_id: int | None = Query(None),
 ):
     org_id = _get_org_id(request)
-    bucket = _bucket(granularity, db)
+    _ensure_scope(db, org_id, building_id, chiller_unit_id)
+    bucket = _bucket(granularity, telemetry_db)
     filters = _apply_filters(org_id, start, end, building_id, chiller_unit_id)
 
     rows = (
-        _base_query(org_id, db)
+        _base_query(org_id, telemetry_db)
         .filter(filters)
         .with_entities(
             bucket,
@@ -167,28 +194,39 @@ def consumption_efficiency(
 def equipment_metrics(
     request: Request,
     db: Session = Depends(get_db_session),
+    telemetry_db: Session = Depends(get_telemetry_session),
     start: datetime | None = Query(None),
     end: datetime | None = Query(None),
     building_id: int | None = Query(None),
 ):
     org_id = _get_org_id(request)
+    _ensure_scope(db, org_id, building_id, None)
     filters = _apply_filters(org_id, start, end, building_id, None)
 
-    bucket = func.coalesce(ChillerUnit.id, 0).label("unit_id")
     rows = (
-        _base_query(org_id, db)
+        _base_query(org_id, telemetry_db)
         .filter(filters)
         .with_entities(
-            bucket,
-            ChillerUnit.name,
+            ChillerTelemetry.chiller_unit_id.label("unit_id"),
             func.sum(_cooling_load_expr()).label("cooling_rth"),
             func.sum(ChillerTelemetry.power_kw).label("power_kw"),
             func.avg(ChillerTelemetry.cop).label("avg_cop"),
         )
-        .group_by(bucket, ChillerUnit.name)
-        .order_by(bucket)
+        .group_by(ChillerTelemetry.chiller_unit_id)
+        .order_by(ChillerTelemetry.chiller_unit_id)
         .all()
     )
+
+    if not rows:
+        return {"units": []}
+
+    unit_names = {
+        row.id: row.name
+        for row in db.query(ChillerUnit.id, ChillerUnit.name)
+        .join(Building)
+        .filter(Building.organization_id == org_id)
+        .all()
+    }
 
     total_cooling = sum(r.cooling_rth or 0 for r in rows) or 1
     total_power = sum(r.power_kw or 0 for r in rows) or 1
@@ -197,7 +235,7 @@ def equipment_metrics(
         "units": [
             {
                 "id": r.unit_id,
-                "name": r.name,
+                "name": unit_names.get(r.unit_id, f"Chiller {r.unit_id}"),
                 "cooling_share": round((r.cooling_rth or 0) / total_cooling * 100, 2),
                 "power_share": round((r.power_kw or 0) / total_power * 100, 2),
                 "efficiency_kwh_per_tr": round((r.power_kw or 0) / (r.cooling_rth or 1), 4),
@@ -212,36 +250,49 @@ def equipment_metrics(
 def chiller_trends(
     request: Request,
     db: Session = Depends(get_db_session),
+    telemetry_db: Session = Depends(get_telemetry_session),
     granularity: Granularity = Query("hour"),
     start: datetime | None = Query(None),
     end: datetime | None = Query(None),
     chiller_unit_id: int | None = Query(None),
 ):
     org_id = _get_org_id(request)
-    bucket = _bucket(granularity, db)
+    _ensure_scope(db, org_id, None, chiller_unit_id)
+    bucket = _bucket(granularity, telemetry_db)
     filters = _apply_filters(org_id, start, end, None, chiller_unit_id)
 
     rows = (
-        _base_query(org_id, db)
+        _base_query(org_id, telemetry_db)
         .filter(filters)
         .with_entities(
             bucket,
-            ChillerUnit.id.label("unit_id"),
-            ChillerUnit.name.label("unit_name"),
+            ChillerTelemetry.chiller_unit_id.label("unit_id"),
             func.avg(ChillerTelemetry.inlet_temp).label("ewt"),
             func.avg(ChillerTelemetry.outlet_temp).label("lwt"),
             func.avg(ChillerTelemetry.power_kw).label("power_kw"),
             func.avg(_cooling_load_expr()).label("cooling_rth"),
         )
-        .group_by(bucket, ChillerUnit.id, ChillerUnit.name)
+        .group_by(bucket, ChillerTelemetry.chiller_unit_id)
         .order_by(bucket)
         .all()
     )
 
+    chiller_names = {
+        row.id: row.name
+        for row in db.query(ChillerUnit.id, ChillerUnit.name)
+        .join(Building)
+        .filter(Building.organization_id == org_id)
+        .all()
+    }
+
     data = {}
     for row in rows:
         if row.unit_id not in data:
-            data[row.unit_id] = {"unit_id": row.unit_id, "unit_name": row.unit_name, "points": []}
+            data[row.unit_id] = {
+                "unit_id": row.unit_id,
+                "unit_name": chiller_names.get(row.unit_id, f"Chiller {row.unit_id}"),
+                "points": [],
+            }
         data[row.unit_id]["points"].append(
             {
                 "timestamp": row.bucket,

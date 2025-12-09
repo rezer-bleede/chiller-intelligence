@@ -10,6 +10,9 @@ Build and start the stack (API + web UI):
 docker-compose up --build
 ```
 
+The stack now provisions a dedicated **history-db** Postgres instance for long-term chiller telemetry. The API keeps metadata in
+the primary `db` service while storing time-series data in `history-db` via the `HISTORICAL_DATABASE_URL` environment variable.
+
 The API container now uses the PostgreSQL **psycopg** driver (v3). If you are running the API
 outside Docker, make sure to install dependencies with `pip install -r api/requirements.txt` and
 set `DATABASE_URL` to a psycopg connection string such as
@@ -20,6 +23,8 @@ the `VITE_API_BASE_URL` defined in `docker-compose.yml`. If the variable is abse
 development, the web client now falls back to `http://localhost:8000`—but you should still set
 `VITE_API_BASE_URL` to match the FastAPI server you are running to avoid browser requests being
 sent to the Vite dev server (which results in 405 errors for routes such as `/auth/login`).
+Configure the historical database connection from the **Data Sources** page if you need to point the telemetry store at an
+external database; the UI also surfaces whether the API is using environment defaults or a saved override.
 
 Run database migrations inside the API container:
 
@@ -97,6 +102,8 @@ navigation in the app shell.
 - Layouts are persisted per user and organization via the `/dashboard-layouts/{page_key}` API, stored in the database, and survive restarts.
 - The left navigation now supports a collapsible mode with state persisted in `localStorage` for a decluttered experience.
 - Dashboard cards and charts now enforce responsive minimum heights and overflow handling (via react-grid-layout + Recharts `ResponsiveContainer`), preventing overlap on smaller screens such as a 13" laptop.
+- A new date range filter sits above the dashboard sections so you can scope KPI cards and charts to a specific window without
+  leaving the page.
 
 ### Frontend tests
 

@@ -36,6 +36,3 @@ class ChillerUnit(Base):
     alert_rules: Mapped[list["AlertRule"]] = relationship(
         "AlertRule", back_populates="chiller_unit", cascade="all, delete-orphan"
     )
-    telemetry_records: Mapped[list["ChillerTelemetry"]] = relationship(
-        "ChillerTelemetry", back_populates="chiller_unit", cascade="all, delete-orphan"
-    )
