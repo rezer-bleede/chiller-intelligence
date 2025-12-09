@@ -73,9 +73,20 @@ const DataSourcesListPage = () => {
                   <td className="px-6 py-3 font-medium text-slate-900 dark:text-white">{source.chiller_unit?.name ?? source.chiller_unit_id}</td>
                   <td className="px-6 py-3 text-slate-600 dark:text-slate-300">{source.type}</td>
                   <td className="px-6 py-3 text-slate-600 dark:text-slate-300">
-                    <pre className="whitespace-pre-wrap rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                      {JSON.stringify(source.connection_params, null, 2)}
-                    </pre>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Live</p>
+                        <pre className="whitespace-pre-wrap rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                          {JSON.stringify(source.connection_params?.live ?? {}, null, 2)}
+                        </pre>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Historical (Postgres)</p>
+                        <pre className="whitespace-pre-wrap rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                          {JSON.stringify(source.connection_params?.historical_storage ?? {}, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-3 text-right">
                     <div className="flex justify-end gap-3 text-sm font-semibold">
