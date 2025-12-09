@@ -7,7 +7,7 @@ from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Integer, JSON, fun
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.db import Base
+from src.db_base import Base
 from .chiller_unit import ChillerUnit
 
 

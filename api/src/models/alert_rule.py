@@ -17,7 +17,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.db import Base
+from src.db_base import Base
 from .chiller_unit import ChillerUnit
 
 

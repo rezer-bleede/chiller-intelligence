@@ -13,24 +13,24 @@ os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 os.environ.setdefault("HISTORICAL_DATABASE_URL", "sqlite+pysqlite:///:memory:")
 
 from src.db import (  # noqa: E402
-    Base,
     SessionLocal,
-    TelemetryBase,
     TelemetrySessionLocal,
     telemetry_engine,
     engine,
     get_db_session,
     get_telemetry_session,
 )
+from src.db_base import Base, TelemetryBase
 from src.main import app  # noqa: E402
 
 
+from sqlalchemy import text
+
 @pytest.fixture(autouse=True)
-def clean_database():
-    Base.metadata.drop_all(bind=engine)
-    TelemetryBase.metadata.drop_all(bind=telemetry_engine)
+def seed_database():
     Base.metadata.create_all(bind=engine)
     TelemetryBase.metadata.create_all(bind=telemetry_engine)
+    seed_demo_data()
     yield
     Base.metadata.drop_all(bind=engine)
     TelemetryBase.metadata.drop_all(bind=telemetry_engine)
@@ -66,6 +66,7 @@ from src.models import (
     User,
 )
 from src.auth.services import get_user_by_email, register_user  # noqa: E402
+from src.seeder.demo_data import seed_demo_data
 
 
 @pytest.fixture

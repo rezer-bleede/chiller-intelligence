@@ -6,7 +6,7 @@ from sqlalchemy import JSON, DateTime, Integer, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.db import Base
+from src.db_base import Base
 
 
 class HistoricalDBConfig(Base):

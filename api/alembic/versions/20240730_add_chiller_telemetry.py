@@ -28,7 +28,6 @@ def upgrade() -> None:
         sa.Column("flow_rate", sa.Float(), nullable=False),
         sa.Column("cop", sa.Float(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.ForeignKeyConstraint(["chiller_unit_id"], ["chiller_units.id"], ondelete="CASCADE"),
     )
     op.create_index(
         op.f("ix_chiller_telemetry_id"), "chiller_telemetry", ["id"], unique=False

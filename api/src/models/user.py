@@ -6,7 +6,7 @@ from enum import Enum
 from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.db import Base
+from src.db_base import Base
 from .organization import Organization
 
 

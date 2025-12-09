@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.db import Base
+from src.db_base import Base
 from .building import Building
 from .chiller_unit import ChillerUnit
 from .organization import Organization
