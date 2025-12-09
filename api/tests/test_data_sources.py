@@ -22,25 +22,20 @@ def test_create_external_db_data_source_with_invalid_params(
     token = response.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     response = client.post(
-        "/data_sources",
+        "/data-sources",
         json={
             "chiller_unit_id": chiller_unit.id,
             "type": "EXTERNAL_DB",
             "connection_params": {
-                "live": {"host": "mqtt://localhost"},
-                "historical_storage": {
-                    "backend": "POSTGRES",
-                    "host": "localhost",
-                    "port": 5432,
-                    "database": "test",
-                    "username": "user",
-                },
+                "host": "localhost",
+                "port": 5432,
+                "database": "test",
             },
         },
         headers=headers,
     )
-    assert response.status_code == 422
-    assert "password" in response.text
+    assert response.status_code == 400
+    assert "must include host, port, database, username, and password" in response.text
 
 
 def test_create_external_db_data_source_with_valid_params(
@@ -59,21 +54,16 @@ def test_create_external_db_data_source_with_valid_params(
     token = response.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     response = client.post(
-        "/data_sources",
+        "/data-sources",
         json={
             "chiller_unit_id": chiller_unit.id,
             "type": "EXTERNAL_DB",
             "connection_params": {
-                "live": {"host": "localhost", "port": 1883},
-                "historical_storage": {
-                    "backend": "POSTGRES",
-                    "host": "localhost",
-                    "port": 5432,
-                    "database": "test",
-                    "username": "user",
-                    "password": "password",
-                    "preload_years": 2,
-                },
+                "host": "localhost",
+                "port": 5432,
+                "database": "test",
+                "username": "user",
+                "password": "password",
             },
         },
         headers=headers,

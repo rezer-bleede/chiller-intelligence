@@ -31,7 +31,6 @@ docker-compose exec api alembic upgrade head
 
 The API exposes `/analytics/*` endpoints that aggregate persisted telemetry. Requests accept date ranges, building/chiller filters,
 and granularities (minute, hour, day, month) to return ready-to-plot series for cooling load, power, efficiency, and CO₂ savings.
-Demo data now preloads two full years of monthly telemetry per chiller so charts and KPIs have rich history immediately after boot.
 Example usage:
 
 ```bash
@@ -174,9 +173,8 @@ Use these defaults to explore the UI with buildings, chillers, alert rules, and 
 ## External data sources
 
 Create or edit data sources with the **External DB** type to connect the platform to an existing
-database. The Data Sources form now captures both live ingest details (MQTT/HTTP/file upload) and
-historical storage credentials for PostgreSQL so you can archive readings alongside the live feed
-and keep two years of history preloaded for analytics.
+database. Provide connection details in the Data Sources form; the backend accepts `EXTERNAL_DB`
+as a `DataSourceType`, allowing operators to stream readings without MQTT/HTTP brokers.
 
 ## Baseline values
 

@@ -111,18 +111,7 @@ def test_full_crud_for_chiller_stack(client):
         json={
             "chiller_unit_id": chiller["id"],
             "type": "MQTT",
-            "connection_params": {
-                "live": {"host": "localhost", "port": 1883},
-                "historical_storage": {
-                    "backend": "POSTGRES",
-                    "host": "localhost",
-                    "port": 5432,
-                    "database": "tenant_plant",
-                    "username": "postgres",
-                    "password": "postgres",
-                    "preload_years": 2,
-                },
-            },
+            "connection_params": {"host": "localhost", "port": 1883},
         },
         headers=auth_header(token),
     )
