@@ -17,6 +17,7 @@ done
 # psql -h db -U postgres -d postgres -c "CREATE SCHEMA public;"
 
 # Run database migrations
+export DATABASE_URL="postgresql://postgres:postgres@db:5432/postgres?options=-csearch_path%3Dpublic"
 alembic upgrade head
 
 # Run seeder

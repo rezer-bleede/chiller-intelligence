@@ -4,10 +4,12 @@ from __future__ import annotations
 import logging
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from .config import settings
+from .db_base import TelemetryBase
+
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +46,7 @@ def configure_telemetry_engine(database_url: str | None = None):
 
 engine = _create_engine(settings.database_url)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
-Base = declarative_base()
-TelemetryBase = declarative_base()
+
 
 configure_telemetry_engine()
 
@@ -70,6 +71,8 @@ def get_telemetry_session():
 
 
 # Ensure the telemetry schema exists for environments without migrations.
+# All models must be imported before create_all is called
+import src.models
 try:
     TelemetryBase.metadata.create_all(bind=telemetry_engine)
 except Exception as exc:  # pragma: no cover - defensive startup
