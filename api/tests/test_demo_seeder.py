@@ -1,5 +1,15 @@
+from datetime import datetime, timedelta, timezone
+
 from src.db import SessionLocal
-from src.models import AlertRule, Building, ChillerUnit, DataSourceConfig, Organization, User
+from src.models import (
+    AlertRule,
+    Building,
+    ChillerTelemetry,
+    ChillerUnit,
+    DataSourceConfig,
+    Organization,
+    User,
+)
 from src.seeder.demo_data import seed_demo_data
 
 
@@ -49,5 +59,29 @@ def test_seed_demo_data_is_idempotent():
         assert session.query(ChillerUnit).count() == initial_counts["chillers"]
         assert session.query(AlertRule).count() == initial_counts["alerts"]
         assert session.query(DataSourceConfig).count() == initial_counts["data_sources"]
+    finally:
+        session.close()
+
+
+def test_seed_demo_data_adds_historical_telemetry():
+    seed_demo_data()
+
+    session = SessionLocal()
+    try:
+        chillers = session.query(ChillerUnit).all()
+        telemetry_count = session.query(ChillerTelemetry).count()
+
+        assert telemetry_count == len(chillers) * 24
+
+        oldest_record = (
+            session.query(ChillerTelemetry)
+            .order_by(ChillerTelemetry.timestamp)
+            .first()
+        )
+        assert oldest_record is not None
+        oldest_ts = oldest_record.timestamp
+        if oldest_ts.tzinfo is None:
+            oldest_ts = oldest_ts.replace(tzinfo=timezone.utc)
+        assert oldest_ts <= datetime.now(timezone.utc) - timedelta(days=700)
     finally:
         session.close()

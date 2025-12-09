@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sys
+from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
 from sqlalchemy.orm import Session
@@ -14,6 +15,7 @@ from src.models import (
     AlertSeverity,
     BaselineValue,
     Building,
+    ChillerTelemetry,
     ChillerUnit,
     ConditionOperator,
     DataSourceConfig,
@@ -86,7 +88,18 @@ def _attach_data_sources(session: Session, chillers: Sequence[ChillerUnit]) -> N
         config = DataSourceConfig(
             chiller_unit_id=chiller.id,
             type=DataSourceType.HTTP,
-            connection_params={"generator": True},
+            connection_params={
+                "live": {"generator": True, "ingest_path": "/telemetry/ingest"},
+                "historical_storage": {
+                    "backend": "POSTGRES",
+                    "host": "postgresdb",
+                    "port": 5432,
+                    "database": "chiller_intel",
+                    "username": "postgres",
+                    "password": "postgres",
+                    "preload_years": 2,
+                },
+            },
         )
         session.add(config)
 
@@ -114,6 +127,27 @@ def _create_alert_rules(session: Session, chillers: Sequence[ChillerUnit]) -> No
             recipient_emails=["maintenance@example.com"],
         )
         session.add_all([high_power, low_delta_t])
+
+
+def _seed_historical_telemetry(session: Session, chillers: Sequence[ChillerUnit]) -> None:
+    """Preload two years of telemetry so analytics surfaces have meaningful data."""
+
+    now = datetime.now(timezone.utc)
+    for chiller in chillers:
+        for month_offset in range(1, 25):
+            timestamp = (now - timedelta(days=30 * month_offset)).replace(
+                day=15, hour=12, minute=0, second=0, microsecond=0
+            )
+            telemetry = ChillerTelemetry(
+                chiller_unit_id=chiller.id,
+                timestamp=timestamp,
+                inlet_temp=11.5 + (month_offset % 3) * 0.4,
+                outlet_temp=6.2 + (month_offset % 2) * 0.35,
+                power_kw=26 + month_offset * 0.4,
+                flow_rate=9.5 + (month_offset % 4) * 0.5,
+                cop=3.1 + (month_offset % 5) * 0.08,
+            )
+            session.add(telemetry)
 
 
 def _create_baselines(session: Session, organization: Organization) -> None:
@@ -151,6 +185,7 @@ def seed_demo_data() -> None:
         buildings = _create_buildings(session, organization)
         chillers = _create_chillers(session, buildings)
         _attach_data_sources(session, chillers)
+        _seed_historical_telemetry(session, chillers)
         _create_alert_rules(session, chillers)
         _create_baselines(session, organization)
 

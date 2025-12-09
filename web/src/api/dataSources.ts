@@ -2,11 +2,27 @@ import client from './client';
 
 export type DataSourceType = 'MQTT' | 'HTTP' | 'FILE_UPLOAD' | 'EXTERNAL_DB';
 
+export type HistoricalStorageConfig = {
+  backend: 'POSTGRES';
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  password: string;
+  ssl?: boolean;
+  preload_years?: number;
+};
+
+export type DataSourceConnectionParams = {
+  live: Record<string, unknown>;
+  historical_storage: HistoricalStorageConfig;
+};
+
 export interface DataSource {
   id: number;
   chiller_unit_id: number;
   type: DataSourceType;
-  connection_params: Record<string, unknown>;
+  connection_params: DataSourceConnectionParams;
   chiller_unit?: {
     id: number;
     name: string;
@@ -16,7 +32,7 @@ export interface DataSource {
 export type DataSourcePayload = {
   chiller_unit_id: number;
   type: DataSourceType;
-  connection_params: Record<string, unknown>;
+  connection_params: DataSourceConnectionParams;
 };
 
 export const listDataSources = async (): Promise<DataSource[]> => {

@@ -6,7 +6,12 @@ from sqlalchemy.orm import Session
 from src.auth.dependencies import get_current_user
 from src.db import get_db_session
 from src.models import ChillerUnit, DataSourceConfig, User
-from src.schemas.data_source import DataSourceCreate, DataSourceResponse, DataSourceUpdate
+from src.schemas.data_source import (
+    DataSourceConnectionParams,
+    DataSourceCreate,
+    DataSourceResponse,
+    DataSourceUpdate,
+)
 from src.services.tenancy import get_chiller_for_org, get_data_source_for_org
 
 router = APIRouter(prefix="/data_sources", tags=["data_sources"])
@@ -28,13 +33,45 @@ def list_data_sources(
 
 
 def _validate_connection_params(payload: DataSourceCreate | DataSourceUpdate):
-    if payload.type == "EXTERNAL_DB":
-        required_keys = {"host", "port", "database", "username", "password"}
-        if not required_keys.issubset(payload.connection_params.keys()):
+    params: DataSourceConnectionParams | None = payload.connection_params
+    if params is None:
+        if isinstance(payload, DataSourceCreate):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Connection parameters for EXTERNAL_DB must include host, port, database, username, and password.",
+                detail="Connection parameters are required.",
             )
+        return
+
+    if not params.live:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Live connection details are required.",
+        )
+
+    storage = params.historical_storage
+    missing = [
+        key
+        for key in ("host", "port", "database", "username", "password")
+        if not getattr(storage, key)
+    ]
+
+    if storage.backend != "POSTGRES":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only POSTGRES is supported for historical storage.",
+        )
+
+    if missing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Historical storage requires host, port, database, username, and password.",
+        )
+
+    if storage.preload_years < 1:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Preload years must be at least 1 to seed historical data.",
+        )
 
 
 @router.post("", response_model=DataSourceResponse, status_code=status.HTTP_201_CREATED)
