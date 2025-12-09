@@ -13,7 +13,6 @@ def test_service_token_can_ingest_telemetry(client: TestClient):
     session = SessionLocal()
     try:
         unit_id = session.query(ChillerUnit.id).first()[0]
-        existing_records = session.query(ChillerTelemetry).count()
     finally:
         session.close()
 
@@ -39,12 +38,7 @@ def test_service_token_can_ingest_telemetry(client: TestClient):
 
     session = SessionLocal()
     try:
-        db_record = (
-            session.query(ChillerTelemetry)
-            .order_by(ChillerTelemetry.timestamp.desc())
-            .first()
-        )
-        assert session.query(ChillerTelemetry).count() == existing_records + 1
+        db_record = session.query(ChillerTelemetry).one()
         assert db_record.chiller_unit_id == unit_id
         assert abs(db_record.inlet_temp - payload["inlet_temp"]) < 0.001
     finally:

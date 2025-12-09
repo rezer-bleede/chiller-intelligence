@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict
 
 from src.models.data_source_config import DataSourceType
 
@@ -11,34 +11,7 @@ from src.models.data_source_config import DataSourceType
 class DataSourceBase(BaseModel):
     chiller_unit_id: Optional[int] = None
     type: DataSourceType
-    connection_params: "DataSourceConnectionParams"
-
-
-class HistoricalStorageConfig(BaseModel):
-    backend: Literal["POSTGRES"] = "POSTGRES"
-    host: str
-    port: int
-    database: str
-    username: str
-    password: str
-    ssl: bool = False
-    preload_years: int = 2
-
-    model_config = ConfigDict(extra="allow")
-
-
-class DataSourceConnectionParams(BaseModel):
-    live: dict[str, Any]
-    historical_storage: HistoricalStorageConfig
-
-    model_config = ConfigDict(extra="allow")
-
-    @field_validator("live")
-    @classmethod
-    def _ensure_live_present(cls, value: dict[str, Any]) -> dict[str, Any]:
-        if value is None:
-            raise ValueError("Live connection details are required")
-        return value
+    connection_params: dict[str, Any]
 
 
 class DataSourceCreate(DataSourceBase):
@@ -47,7 +20,7 @@ class DataSourceCreate(DataSourceBase):
 
 class DataSourceUpdate(BaseModel):
     type: Optional[DataSourceType] = None
-    connection_params: Optional[DataSourceConnectionParams] = None
+    connection_params: Optional[dict[str, Any]] = None
 
 
 class DataSourceResponse(DataSourceBase):
