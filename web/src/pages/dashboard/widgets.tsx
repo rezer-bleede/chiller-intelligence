@@ -281,8 +281,8 @@ export const buildWidgetRegistry = (
                 { id: 'cop', orientation: 'right', label: 'COP' },
               ]}
               series={[
-                { key: 'efficiency', name: 'kWh/TR', color: '#6366f1', yAxisId: 'eff' },
-                { key: 'cop', name: 'Average COP', color: '#22c55e', yAxisId: 'cop' },
+                { dataKey: 'efficiency', name: 'kWh/TR', color: '#6366f1', yAxisId: 'eff' },
+                { dataKey: 'cop', name: 'Average COP', color: '#22c55e', yAxisId: 'cop' },
               ]}
             />
           ),

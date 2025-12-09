@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from src.auth.security import get_password_hash
 from src.constants import DEMO_ORG_NAME
-from src.db import SessionLocal
+from src.db import SessionLocal, TelemetrySessionLocal
 from src.models import (
     AlertRule,
     AlertSeverity,
@@ -167,6 +167,8 @@ def _generate_historical_telemetry_for_chiller(
 
         telemetry_records.append(
             ChillerTelemetry(
+                organization_id=chiller.building.organization_id,
+                building_id=chiller.building_id,
                 chiller_unit_id=chiller.id,
                 timestamp=timestamp,
                 inlet_temp=inlet_temp,
@@ -180,21 +182,24 @@ def _generate_historical_telemetry_for_chiller(
     return telemetry_records
 
 
-def _populate_historical_telemetry(session: Session, chillers: Sequence[ChillerUnit]) -> None:
+def _populate_historical_telemetry(
+    telemetry_session: Session, chillers: Sequence[ChillerUnit]
+) -> None:
     """Backfill two years of demo telemetry for analytics visualizations."""
 
-    if session.query(func.count(ChillerTelemetry.id)).scalar():
+    if telemetry_session.query(func.count(ChillerTelemetry.id)).scalar():
         return
 
     records: list[ChillerTelemetry] = []
     for chiller in chillers:
         records.extend(_generate_historical_telemetry_for_chiller(chiller))
 
-    session.bulk_save_objects(records)
+    telemetry_session.bulk_save_objects(records)
 
 
 def seed_demo_data() -> None:
     session = SessionLocal()
+    telemetry_session = TelemetrySessionLocal()
     try:
         if not _database_is_empty(session):
             print("[seeder] Database already contains data, skipping demo seed")
@@ -207,16 +212,19 @@ def seed_demo_data() -> None:
         _attach_data_sources(session, chillers)
         _create_alert_rules(session, chillers)
         _create_baselines(session, organization)
-        _populate_historical_telemetry(session, chillers)
+        _populate_historical_telemetry(telemetry_session, chillers)
 
         session.commit()
+        telemetry_session.commit()
         print("[seeder] Demo data created successfully")
     except Exception as exc:  # pragma: no cover - defensive logging
         session.rollback()
+        telemetry_session.rollback()
         print(f"[seeder] Failed to seed demo data: {exc}")
         raise
     finally:
         session.close()
+        telemetry_session.close()
 
 
 if __name__ == "__main__":

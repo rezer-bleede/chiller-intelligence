@@ -14,6 +14,12 @@ class Settings:
             "DATABASE_URL", "postgresql+psycopg://postgres:postgres@db:5432/postgres"
         )
     )
+    historical_database_url: str = field(
+        default_factory=lambda: os.getenv(
+            "HISTORICAL_DATABASE_URL",
+            "postgresql+psycopg://postgres:postgres@history-db:5432/postgres",
+        )
+    )
     secret_key: str = field(default_factory=lambda: os.getenv("SECRET_KEY", "dev-secret-key"))
     allowed_origins: list[str] = field(
         default_factory=lambda: [

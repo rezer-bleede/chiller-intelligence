@@ -10,17 +10,30 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("HISTORICAL_DATABASE_URL", "sqlite+pysqlite:///:memory:")
 
-from src.db import Base, SessionLocal, engine, get_db_session  # noqa: E402
+from src.db import (  # noqa: E402
+    Base,
+    SessionLocal,
+    TelemetryBase,
+    TelemetrySessionLocal,
+    telemetry_engine,
+    engine,
+    get_db_session,
+    get_telemetry_session,
+)
 from src.main import app  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
 def clean_database():
     Base.metadata.drop_all(bind=engine)
+    TelemetryBase.metadata.drop_all(bind=telemetry_engine)
     Base.metadata.create_all(bind=engine)
+    TelemetryBase.metadata.create_all(bind=telemetry_engine)
     yield
     Base.metadata.drop_all(bind=engine)
+    TelemetryBase.metadata.drop_all(bind=telemetry_engine)
 
 
 def _override_get_db():
@@ -32,6 +45,17 @@ def _override_get_db():
 
 
 app.dependency_overrides[get_db_session] = _override_get_db
+
+
+def _override_get_telemetry_db():
+    db = TelemetrySessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_telemetry_session] = _override_get_telemetry_db
 
 
 from src.models import (
@@ -47,6 +71,15 @@ from src.auth.services import get_user_by_email, register_user  # noqa: E402
 @pytest.fixture
 def db_session() -> SessionLocal:
     db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@pytest.fixture
+def telemetry_session() -> TelemetrySessionLocal:
+    db = TelemetrySessionLocal()
     try:
         yield db
     finally:

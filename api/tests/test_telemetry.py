@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 
 from src.config import settings
-from src.db import SessionLocal
+from src.db import SessionLocal, TelemetrySessionLocal
 from src.models import ChillerTelemetry, ChillerUnit
 from src.seeder.demo_data import seed_demo_data
 
@@ -36,10 +36,10 @@ def test_service_token_can_ingest_telemetry(client: TestClient):
     data = response.json()
     assert data["unit_id"] == unit_id
 
-    session = SessionLocal()
+    telemetry_session = TelemetrySessionLocal()
     try:
         db_record = (
-            session.query(ChillerTelemetry)
+            telemetry_session.query(ChillerTelemetry)
             .order_by(ChillerTelemetry.timestamp.desc())
             .first()
         )
@@ -47,7 +47,7 @@ def test_service_token_can_ingest_telemetry(client: TestClient):
         assert db_record.chiller_unit_id == unit_id
         assert abs(db_record.inlet_temp - payload["inlet_temp"]) < 0.001
     finally:
-        session.close()
+        telemetry_session.close()
 
 
 def test_ingest_requires_auth_without_service_token(client: TestClient):

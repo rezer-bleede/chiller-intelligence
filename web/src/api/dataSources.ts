@@ -19,6 +19,19 @@ export type DataSourcePayload = {
   connection_params: Record<string, unknown>;
 };
 
+export interface HistoricalDBConfig {
+  connection_url: string;
+  connection_params: {
+    driver: string;
+    host: string;
+    port: number;
+    database: string;
+    username: string;
+    password?: string;
+  };
+  source: 'database' | 'environment';
+}
+
 export const listDataSources = async (): Promise<DataSource[]> => {
   const { data } = await client.get<DataSource[]>('/data_sources');
   return data;
@@ -44,4 +57,16 @@ export const updateDataSource = async (
 
 export const deleteDataSource = async (id: string): Promise<void> => {
   await client.delete(`/data_sources/${id}`);
+};
+
+export const getHistoricalDBConfig = async (): Promise<HistoricalDBConfig> => {
+  const { data } = await client.get<HistoricalDBConfig>('/data_sources/historical-db');
+  return data;
+};
+
+export const updateHistoricalDBConfig = async (
+  payload: Omit<HistoricalDBConfig['connection_params'], 'password'> & { password?: string },
+): Promise<HistoricalDBConfig> => {
+  const { data } = await client.put<HistoricalDBConfig>('/data_sources/historical-db', payload);
+  return data;
 };

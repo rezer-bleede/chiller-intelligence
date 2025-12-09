@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from src.config import settings
 from src.constants import DEMO_ORG_NAME
-from src.db import get_db_session
+from src.db import get_db_session, get_telemetry_session
 from src.models import (
     AlertRule,
     Building,
@@ -62,6 +62,7 @@ def ingest_telemetry(
     payload: TelemetryIngestRequest,
     request: Request,
     db: Session = Depends(get_db_session),
+    telemetry_db: Session = Depends(get_telemetry_session),
 ):
     service_authenticated = request.headers.get("X-Service-Token") == settings.service_token
     current_user: User | None = getattr(request.state, "user", None)
@@ -69,6 +70,8 @@ def ingest_telemetry(
     chiller = _get_chiller_for_request(payload, db, current_user, service_authenticated)
 
     telemetry = ChillerTelemetry(
+        organization_id=chiller.building.organization_id,
+        building_id=chiller.building_id,
         chiller_unit_id=chiller.id,
         timestamp=payload.timestamp,
         inlet_temp=payload.inlet_temp,
@@ -77,7 +80,7 @@ def ingest_telemetry(
         flow_rate=payload.flow_rate,
         cop=payload.cop,
     )
-    db.add(telemetry)
+    telemetry_db.add(telemetry)
 
     rules = (
         db.query(AlertRule)
@@ -86,8 +89,9 @@ def ingest_telemetry(
     )
     evaluate_alerts_for_payload(db, chiller.id, payload, rules)
 
+    telemetry_db.commit()
+    telemetry_db.refresh(telemetry)
     db.commit()
-    db.refresh(telemetry)
 
     return TelemetryResponse(
         id=telemetry.id,
