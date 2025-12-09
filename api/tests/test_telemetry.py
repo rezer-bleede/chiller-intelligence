@@ -38,7 +38,12 @@ def test_service_token_can_ingest_telemetry(client: TestClient):
 
     session = SessionLocal()
     try:
-        db_record = session.query(ChillerTelemetry).one()
+        db_record = (
+            session.query(ChillerTelemetry)
+            .order_by(ChillerTelemetry.timestamp.desc())
+            .first()
+        )
+        assert db_record is not None
         assert db_record.chiller_unit_id == unit_id
         assert abs(db_record.inlet_temp - payload["inlet_temp"]) < 0.001
     finally:

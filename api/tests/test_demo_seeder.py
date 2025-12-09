@@ -1,5 +1,17 @@
 from src.db import SessionLocal
-from src.models import AlertRule, Building, ChillerUnit, DataSourceConfig, Organization, User
+from datetime import timedelta
+
+from sqlalchemy import func
+
+from src.models import (
+    AlertRule,
+    Building,
+    ChillerTelemetry,
+    ChillerUnit,
+    DataSourceConfig,
+    Organization,
+    User,
+)
 from src.seeder.demo_data import seed_demo_data
 
 
@@ -36,6 +48,7 @@ def test_seed_demo_data_is_idempotent():
             "chillers": session.query(ChillerUnit).count(),
             "alerts": session.query(AlertRule).count(),
             "data_sources": session.query(DataSourceConfig).count(),
+            "telemetry": session.query(ChillerTelemetry).count(),
         }
     finally:
         session.close()
@@ -49,5 +62,30 @@ def test_seed_demo_data_is_idempotent():
         assert session.query(ChillerUnit).count() == initial_counts["chillers"]
         assert session.query(AlertRule).count() == initial_counts["alerts"]
         assert session.query(DataSourceConfig).count() == initial_counts["data_sources"]
+        assert session.query(ChillerTelemetry).count() == initial_counts["telemetry"]
+    finally:
+        session.close()
+
+
+def test_seed_demo_data_populates_two_years_of_telemetry():
+    seed_demo_data()
+
+    session = SessionLocal()
+    try:
+        telemetry_count = session.query(ChillerTelemetry).count()
+        assert telemetry_count > 0
+
+        grouped_counts = dict(
+            session.query(ChillerTelemetry.chiller_unit_id, func.count())
+            .group_by(ChillerTelemetry.chiller_unit_id)
+            .all()
+        )
+        for count in grouped_counts.values():
+            assert count >= 700
+
+        min_timestamp, max_timestamp = session.query(
+            func.min(ChillerTelemetry.timestamp), func.max(ChillerTelemetry.timestamp)
+        ).one()
+        assert (max_timestamp - min_timestamp) >= timedelta(days=720)
     finally:
         session.close()
