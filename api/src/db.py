@@ -18,7 +18,11 @@ def _create_engine(database_url: str):
     """Build a SQLAlchemy engine configured for the provided URL."""
 
     is_sqlite = database_url.startswith("sqlite")
-    connect_args = {"check_same_thread": False} if is_sqlite else {}
+    connect_args = (
+        {"check_same_thread": False}
+        if is_sqlite
+        else {"options": "-csearch_path=public"}
+    )
     engine_kwargs = {"future": True, "connect_args": connect_args}
     if is_sqlite:
         engine_kwargs["poolclass"] = StaticPool
