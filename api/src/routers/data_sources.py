@@ -9,10 +9,12 @@ from src.models import ChillerUnit, DataSourceConfig, User
 from src.schemas.data_source import DataSourceCreate, DataSourceResponse, DataSourceUpdate
 from src.services.tenancy import get_chiller_for_org, get_data_source_for_org
 
-router = APIRouter(prefix="/data_sources", tags=["data_sources"])
+base_router = APIRouter(tags=["data_sources"])
+router = APIRouter(prefix="/data-sources", tags=["data_sources"])
+legacy_router = APIRouter(prefix="/data_sources", tags=["data_sources"])
 
 
-@router.get("", response_model=list[DataSourceResponse])
+@base_router.get("/", response_model=list[DataSourceResponse])
 def list_data_sources(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db_session),
@@ -37,7 +39,7 @@ def _validate_connection_params(payload: DataSourceCreate | DataSourceUpdate):
             )
 
 
-@router.post("", response_model=DataSourceResponse, status_code=status.HTTP_201_CREATED)
+@base_router.post("/", response_model=DataSourceResponse, status_code=status.HTTP_201_CREATED)
 def create_data_source(
     payload: DataSourceCreate,
     current_user: User = Depends(get_current_user),
@@ -52,7 +54,7 @@ def create_data_source(
     return data_source
 
 
-@router.get("/{data_source_id}", response_model=DataSourceResponse)
+@base_router.get("/{data_source_id}", response_model=DataSourceResponse)
 def get_data_source(
     data_source_id: int,
     current_user: User = Depends(get_current_user),
@@ -61,7 +63,7 @@ def get_data_source(
     return get_data_source_for_org(db, data_source_id, current_user)
 
 
-@router.patch("/{data_source_id}", response_model=DataSourceResponse)
+@base_router.patch("/{data_source_id}", response_model=DataSourceResponse)
 def update_data_source(
     data_source_id: int,
     payload: DataSourceUpdate,
@@ -79,7 +81,7 @@ def update_data_source(
     return data_source
 
 
-@router.delete("/{data_source_id}", status_code=status.HTTP_204_NO_CONTENT)
+@base_router.delete("/{data_source_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_data_source(
     data_source_id: int,
     current_user: User = Depends(get_current_user),
@@ -89,3 +91,7 @@ def delete_data_source(
     db.delete(data_source)
     db.commit()
     return None
+
+
+router.include_router(base_router)
+legacy_router.include_router(base_router)

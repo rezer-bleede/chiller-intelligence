@@ -1,9 +1,13 @@
 """Populate the database with demo data for fresh installations."""
 from __future__ import annotations
 
+import math
+import random
 import sys
+from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from src.auth.security import get_password_hash
@@ -14,6 +18,7 @@ from src.models import (
     AlertSeverity,
     BaselineValue,
     Building,
+    ChillerTelemetry,
     ChillerUnit,
     ConditionOperator,
     DataSourceConfig,
@@ -139,6 +144,55 @@ def _create_baselines(session: Session, organization: Organization) -> None:
     )
 
 
+def _generate_historical_telemetry_for_chiller(
+    chiller: ChillerUnit, days: int = 730
+) -> list[ChillerTelemetry]:
+    """Create synthetic telemetry spanning the requested number of days."""
+
+    now = datetime.now(timezone.utc)
+    telemetry_records: list[ChillerTelemetry] = []
+
+    for offset in range(days):
+        timestamp = now - timedelta(days=offset)
+        seasonal_factor = 1 + 0.2 * math.sin(2 * math.pi * (offset % 365) / 365)
+        load_factor = random.uniform(0.85, 1.15)
+        base_power_kw = max(chiller.capacity_tons * 0.7, 40.0)
+        power_kw = round(base_power_kw * seasonal_factor * load_factor, 2)
+
+        delta_t = round(random.uniform(4.5, 7.0), 2)
+        flow_rate = round((power_kw * 12000) / (delta_t * 500), 2)
+        inlet_temp = round(random.uniform(10.5, 13.5), 2)
+        outlet_temp = round(inlet_temp - delta_t, 2)
+        cop = round(random.uniform(3.0, 5.0) * seasonal_factor, 2)
+
+        telemetry_records.append(
+            ChillerTelemetry(
+                chiller_unit_id=chiller.id,
+                timestamp=timestamp,
+                inlet_temp=inlet_temp,
+                outlet_temp=outlet_temp,
+                power_kw=power_kw,
+                flow_rate=flow_rate,
+                cop=cop,
+            )
+        )
+
+    return telemetry_records
+
+
+def _populate_historical_telemetry(session: Session, chillers: Sequence[ChillerUnit]) -> None:
+    """Backfill two years of demo telemetry for analytics visualizations."""
+
+    if session.query(func.count(ChillerTelemetry.id)).scalar():
+        return
+
+    records: list[ChillerTelemetry] = []
+    for chiller in chillers:
+        records.extend(_generate_historical_telemetry_for_chiller(chiller))
+
+    session.bulk_save_objects(records)
+
+
 def seed_demo_data() -> None:
     session = SessionLocal()
     try:
@@ -153,6 +207,7 @@ def seed_demo_data() -> None:
         _attach_data_sources(session, chillers)
         _create_alert_rules(session, chillers)
         _create_baselines(session, organization)
+        _populate_historical_telemetry(session, chillers)
 
         session.commit()
         print("[seeder] Demo data created successfully")

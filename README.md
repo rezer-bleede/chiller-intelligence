@@ -157,6 +157,9 @@ All endpoints enforce multi-tenancy: authenticated users can access only the rec
 
 Running `docker-compose up --build` now bootstraps a complete demo tenant and connects it to a synthetic data generator.
 
+The demo seeder also backfills **two years** of synthetic historical telemetry so analytics dashboards render rich trends even
+before live data starts streaming.
+
 ### Demo Admin Login
 
 - Email: `demo@demo.com`
