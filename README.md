@@ -2,9 +2,32 @@
 
 Chiller Intelligence – backend skeleton for a multi-tenant chiller analytics platform.
 
-## Getting Started
+## 🚀 Quick Deploy (Production)
 
-Build and start the stack (API + web UI):
+Deploy the complete application with pre-built Docker images. Choose your platform:
+
+**🐧 Linux / macOS:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/rezer-bleede/chiller-intelligence/main/docs/quick-deploy.sh | bash
+```
+
+**🪟 Windows PowerShell:**
+```powershell
+iwr -useb https://raw.githubusercontent.com/rezer-bleede/chiller-intelligence/main/docs/quick-deploy.ps1 | iex
+```
+
+**🪟 Windows Command Prompt:**
+```cmd
+powershell -Command "iwr -useb https://raw.githubusercontent.com/rezer-bleede/chiller-intelligence/main/docs/quick-deploy.bat -OutFile quick-deploy.bat; .\quick-deploy.bat"
+```
+
+**Or visit our [Quick Deploy Page](https://rezer-bleede.github.io/chiller-intelligence/) for detailed instructions.**
+
+This will download and deploy the entire stack using published Docker images from DockerHub. No need to clone the repository!
+
+## 🛠️ Development Setup
+
+For local development, build and start the stack (API + web UI):
 
 ```bash
 docker-compose up --build

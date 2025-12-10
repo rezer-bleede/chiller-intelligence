@@ -1,0 +1,144 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: docker.io
+  IMAGE_PREFIX: ${{ secrets.DOCKERHUB_USERNAME }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, web, data-generator]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/chiller-intelligence-${{ matrix.service }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./${{ matrix.service }}
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        platforms: linux/amd64,linux/arm64
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  create-manifest:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Create deployment manifest
+      run: |
+        mkdir -p deployment
+        cat > deployment/docker-compose.prod.yml << 'EOF'
+        version: "3.9"
+        
+        services:
+          db:
+            image: postgres:16
+            environment:
+              POSTGRES_DB: postgres
+              POSTGRES_USER: postgres
+              POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+            ports:
+              - "5432:5432"
+            volumes:
+              - db_data:/var/lib/postgresql/data
+            restart: unless-stopped
+        
+          history-db:
+            image: postgres:16
+            environment:
+              POSTGRES_DB: postgres
+              POSTGRES_USER: postgres
+              POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+            ports:
+              - "5433:5432"
+            volumes:
+              - history_db_data:/var/lib/postgresql/data
+            restart: unless-stopped
+        
+          api:
+            image: ${{ env.IMAGE_PREFIX }}/chiller-intelligence-api:${TAG:-latest}
+            depends_on:
+              - db
+              - history-db
+            environment:
+              DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/postgres
+              HISTORICAL_DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-postgres}@history-db:5432/postgres
+              SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
+              GENERATOR_SERVICE_TOKEN: ${GENERATOR_SERVICE_TOKEN:-service-token-xyz}
+              ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://web:80,http://localhost:5173,http://127.0.0.1:5173,http://data-generator}
+            ports:
+              - "8000:8000"
+            restart: unless-stopped
+        
+          web:
+            image: ${{ env.IMAGE_PREFIX }}/chiller-intelligence-web:${TAG:-latest}
+            depends_on:
+              - api
+            environment:
+              - VITE_API_BASE_URL=${API_BASE_URL:-http://api:8000}
+            ports:
+              - "3000:80"
+            restart: unless-stopped
+        
+          data-generator:
+            image: ${{ env.IMAGE_PREFIX }}/chiller-intelligence-data-generator:${TAG:-latest}
+            container_name: data-generator
+            depends_on:
+              - api
+            environment:
+              BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8000}
+              GENERATOR_SERVICE_TOKEN: ${GENERATOR_SERVICE_TOKEN:-service-token-xyz}
+            restart: unless-stopped
+        
+        volumes:
+          db_data:
+          history_db_data:
+        EOF
+
+    - name: Upload deployment files
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-files
+        path: deployment/
+        retention-days: 90

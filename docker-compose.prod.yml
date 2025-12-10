@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  history-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"
+    volumes:
+      - history_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  api:
+    image: ${DOCKERHUB_USERNAME}/chiller-intelligence-api:${TAG:-latest}
+    depends_on:
+      - db
+      - history-db
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/postgres
+      HISTORICAL_DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:-postgres}@history-db:5432/postgres
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
+      GENERATOR_SERVICE_TOKEN: ${GENERATOR_SERVICE_TOKEN:-service-token-xyz}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://web:80,http://localhost:5173,http://127.0.0.1:5173,http://data-generator}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  web:
+    image: ${DOCKERHUB_USERNAME}/chiller-intelligence-web:${TAG:-latest}
+    depends_on:
+      - api
+    environment:
+      - VITE_API_BASE_URL=${API_BASE_URL:-http://api:8000}
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+  data-generator:
+    image: ${DOCKERHUB_USERNAME}/chiller-intelligence-data-generator:${TAG:-latest}
+    container_name: data-generator
+    depends_on:
+      - api
+    environment:
+      BACKEND_API_URL: ${BACKEND_API_URL:-http://api:8000}
+      GENERATOR_SERVICE_TOKEN: ${GENERATOR_SERVICE_TOKEN:-service-token-xyz}
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  history_db_data:
